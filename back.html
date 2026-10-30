@@ -124,6 +124,28 @@
   .toast.on{opacity:1}
   .note{font-size:11.5px;color:#999;margin-top:14px;line-height:1.5}
 </style>
+<style>
+  .side .role select{font-size:12.5px}
+  .conf{background:#fff4f4}
+  .lock{display:inline-block;font-size:10.5px;font-weight:700;color:#8e1c1c;background:#ffe3e3;border:1px solid #f3b4b4;border-radius:3px;padding:0 5px;margin-left:4px;vertical-align:1px}
+  .co{font-size:11px;color:#666;margin-left:4px}
+  .left{font-weight:600}.left.ok{color:#2e7d32}.left.soon{color:#ef7f1a}.left.bad{color:#c62828}
+  .ctl{width:100%;border-collapse:collapse;font-size:12.5px}
+  .ctl th{text-align:left;color:#666;font-weight:600;padding:5px 6px;border-bottom:1px solid #e4e4e4;background:#fafafa}
+  .ctl td{padding:6px;border-bottom:1px solid #f0f0f0;vertical-align:top}
+  .ctl .res{color:#555;font-size:12px;margin-top:2px;white-space:normal}
+  .ctl .btn{height:24px;font-size:12px;padding:0 8px}
+  .rl{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:8px}
+  .rl.main{background:#197de1;color:#fff}.rl.co{background:#e3e3e3;color:#444}
+  .ps{font-size:11.5px;font-weight:600}
+  .ps.sent{color:#5e35b1}.ps.work{color:#8d6e00}.ps.done{color:#2e7d32}.ps.returned{color:#c62828}
+  .opts2{display:grid;grid-template-columns:auto 1fr auto auto;gap:6px 10px;align-items:center;border:1px solid #e0e0e0;border-radius:4px;padding:10px}
+  .opts2 .h{font-size:11.5px;color:#888;font-weight:600}
+  .opts2 input[type=date]{font:inherit;height:28px;border:1px solid #c5c5c5;border-radius:3px;padding:0 6px}
+  .opts2 .dis{opacity:.4}
+  .ctlrow{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:#555;margin-top:8px}
+  .ctlrow b{color:#2b2b2b}
+</style>
 </head>
 <body>
 
@@ -133,6 +155,7 @@
     <label>Войти как (для демонстрации)</label>
     <select id="role" onchange="setRole(this.value)">
       <option value="mod">Модератор — Ахметова Г.</option>
+      <option value="conf">Уполномоченный по конфиденциальным обращениям</option>
       <option value="vertex">Исполнитель — Vertex Holding</option>
       <option value="union">Исполнитель — Профсоюз</option>
       <option value="hr">Исполнитель — HR-департамент КРЖ</option>
@@ -145,7 +168,7 @@
     <div class="item grp">Предложения по улучшению</div>
     <div class="item sub active">Обращения</div>
     <div class="item sub">Темы обращений</div>
-    <div class="item sub">Исполнители</div>
+    <div class="item sub">Исполнители и сроки</div>
     <div class="item grp">Новости</div>
     <div class="item grp">Справочники</div>
   </div>
@@ -164,8 +187,8 @@
     <div class="filter">
       <label>Статус<select id="fStatus" onchange="renderGrid()"><option value="">Все</option></select></label>
       <label id="fExecWrap">Исполнитель<select id="fExec" onchange="renderGrid()"><option value="">Все</option><option value="none">Не назначен</option></select></label>
+      <label>Срок<select id="fDue" onchange="renderGrid()"><option value="">Любой</option><option value="over">Просрочено</option><option value="soon">Истекает за 1 день</option><option value="ext">Запрошено продление</option></select></label>
       <label>Тип<select id="fType" onchange="renderGrid()"><option value="">Все</option><option>Жалоба</option><option>Предложение</option></select></label>
-      <label>Тема<select id="fTopic" onchange="renderGrid()"><option value="">Все</option></select></label>
       <label>Поиск<input type="text" id="fText" placeholder="№, заявитель, текст" oninput="renderGrid()"></label>
     </div>
     <div class="bp">
@@ -173,12 +196,11 @@
       <button class="btn" onclick="toast('Выгрузка в Excel (макет)')">Excel</button>
     </div>
     <table class="grid">
-      <thead><tr><th>Номер</th><th>Дата</th><th>Тип</th><th>Тема</th><th>Заявитель</th><th>Исполнитель</th><th>Статус</th><th>Срок</th><th>Оценка</th></tr></thead>
+      <thead><tr><th>Номер</th><th>Дата</th><th>Тип</th><th>Тема</th><th>Заявитель</th><th>Исполнители</th><th>Статус</th><th>Срок</th><th>Осталось</th><th>Оценка</th></tr></thead>
       <tbody id="grid"></tbody>
     </table>
     <div class="rows" id="rows"></div>
-    <div class="note">Макет, данные вымышленные. Слева можно переключить роль: модератор видит все обращения, исполнитель — только направленные ему.
-      Красная полоса у строки — просрочен срок исполнения.</div>
+    <div class="note" id="brNote"></div>
   </div>
 
   <div class="ws hidden" id="edit">
@@ -191,9 +213,10 @@
         <div class="box">
           <div class="descr">
             <div><div style="color:#666;margin-bottom:4px">Описание обращения</div><div class="v" id="eDescr"></div></div>
-            <div><div style="color:#666;margin-bottom:4px">Решение исполнителя</div><div class="v" id="eDecision"></div></div>
+            <div><div style="color:#666;margin-bottom:4px">Итоговое решение</div><div class="v" id="eDecision"></div></div>
           </div>
         </div>
+        <div class="box" id="ctlBox"></div>
         <div class="box" id="rateBox"></div>
         <div class="actions" id="actions"></div>
       </div>
@@ -204,26 +227,29 @@
   </div>
 </div>
 
-<!-- Модератор: направить исполнителю -->
+<!-- направить исполнителям -->
 <div class="ovl hidden" id="dlgSend">
-  <div class="dlg">
-    <div class="hd">Направить на исполнение <span style="cursor:pointer" onclick="hide('dlgSend')">✕</span></div>
+  <div class="dlg" style="width:620px">
+    <div class="hd"><span id="sTitle">Направить на исполнение</span><span style="cursor:pointer" onclick="hide('dlgSend')">✕</span></div>
     <div class="bd">
       <div class="muted" id="sendInfo"></div>
-      <div class="opts" id="opts"></div>
-      <label>Срок исполнения<select id="sDue"><option value="2">2 рабочих дня</option><option value="5" selected>5 рабочих дней</option><option value="10">10 рабочих дней</option></select></label>
-      <label>Комментарий исполнителю<textarea id="sComment" rows="3" placeholder="Необязательно"></textarea></label>
+      <div class="opts2" id="opts"></div>
+      <div class="muted" style="font-size:12px">Ответственный исполнитель — один, он закрывает обращение. Соисполнители — по необходимости, у каждого может быть свой срок. Обращение можно закрыть, только когда все соисполнители отметят свою часть выполненной.</div>
+      <label>Комментарий исполнителям<textarea id="sComment" rows="2" placeholder="Необязательно"></textarea></label>
+      <label id="anonWrap" style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="sAnon" checked disabled> Передать обезличенно — ФИО и табельный номер заявителя скрыты от исполнителей</label>
       <div class="err" id="sErr"></div>
     </div>
     <div class="ft"><button class="btn primary" onclick="doSend()">Направить</button><button class="btn" onclick="hide('dlgSend')">Отмена</button></div>
   </div>
 </div>
 
-<!-- Исполнитель: закрыть / вернуть -->
+<!-- текстовый диалог -->
 <div class="ovl hidden" id="dlgText">
   <div class="dlg" style="width:480px">
     <div class="hd"><span id="tTitle"></span><span style="cursor:pointer" onclick="hide('dlgText')">✕</span></div>
-    <div class="bd"><div class="muted" id="tHint"></div><label><span id="tLabel"></span><textarea id="tText" rows="4"></textarea></label><div class="err" id="tErr"></div></div>
+    <div class="bd"><div class="muted" id="tHint"></div>
+      <label id="tDateWrap">Новый срок<input type="date" id="tDate" style="height:30px;border:1px solid #c5c5c5;border-radius:3px;padding:0 6px"></label>
+      <label><span id="tLabel"></span><textarea id="tText" rows="4"></textarea></label><div class="err" id="tErr"></div></div>
     <div class="ft"><button class="btn primary" id="tOk"></button><button class="btn" onclick="hide('dlgText')">Отмена</button></div>
   </div>
 </div>
@@ -231,6 +257,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
+const TODAY=new Date('2026-10-30T10:00:00');
 const EX = {
   vertex:{name:'Vertex Holding',dot:'#ef7f1a',cls:'p-vertex',d:'Питание, проживание, уборка, стирка, транспорт'},
   union:{name:'Профсоюз',dot:'#2e9d5b',cls:'p-union',d:'Защита прав, культура, спорт, досуг'},
@@ -240,178 +267,264 @@ const ST = {
   new:['Новое','s-new'], sent:['Направлено исполнителю','s-sent'], work:['В работе','s-work'],
   returned:['Возвращено модератору','s-returned'], closed:['Закрыто','s-closed'], rated:['Оценено','s-rated'], cancel:['Отменено','s-cancel']
 };
+const PS = {sent:'Ожидает принятия',work:'В работе',done:'Часть выполнена',returned:'Отказался'};
 const NOTIFY = {sent:'Направлено исполнителю',work:'В работе',closed:'Закрыто — оцените работу исполнителя',cancel:'Отменено'};
 const PATH = [['new','Получено'],['sent','Направлено'],['work','В работе'],['closed','Закрыто'],['rated','Оценено']];
-const TOPICS = ['Питание','Проживание','Уборка и стирка','Транспорт','Оплата и графики','Льготы и гарантии','Культура и спорт','Защита трудовых прав','Другое'];
-const MOD = 'Модератор Ахметова Г.';
+const MOD='Модератор Ахметова Г.', CONF='Уполномоченный Сапарова А.';
+const CONF_TOPICS='Жалоба на руководителя, конфликт, давление, притеснение, защита от преследования';
 
+const d=s=>new Date(s+'T18:00:00');
+const fd=s=>s?s.slice(8,10)+'.'+s.slice(5,7)+'.'+s.slice(0,4):'—';
 let D = [
- {id:'TRT-002417',date:'30.10.2026 07:42',type:'Жалоба',topic:'Питание',author:'Сейтказиев Н. Б.',ex:null,status:'new',due:null,
+ {id:'TRT-002417',date:'30.10.2026 07:42',type:'Жалоба',topic:'Питание',author:'Сейтказиев Н. Б.',status:'new',parts:[],
   descr:'На ужине 29.10 гарнир был холодный, мясное блюдо закончилось к 20:30. Вторая смена осталась без горячего.',
   log:[['app','30.10 07:42','Заявитель','Обращение подано через мобильное приложение']]},
- {id:'TRT-002416',date:'30.10.2026 06:15',type:'Предложение',topic:'Культура и спорт',author:'Тлеубаев Р. Ж.',ex:null,status:'new',due:null,
-  descr:'Предлагаю организовать турнир по волейболу между сменами в спортзале вахты.',
-  log:[['app','30.10 06:15','Заявитель','Обращение подано через мобильное приложение']]},
- {id:'TRT-002409',date:'29.10.2026 14:03',type:'Жалоба',topic:'Уборка и стирка',author:'Касымов Д. А.',ex:'vertex',status:'work',due:'05.11.2026',
+ {id:'TRT-002415',date:'29.10.2026 21:10',type:'Жалоба',topic:'Проживание',author:'Нургалиев Б. С.',status:'work',
+  descr:'В общежитии 3 нет горячей воды третьи сутки. Вахтёр говорит — вопрос к HR, т.к. нужен перевод в другой корпус на время ремонта.',
+  parts:[{k:'vertex',role:'main',st:'work',due:'2026-11-03'},{k:'hr',role:'co',st:'done',due:'2026-11-01',res:'Согласован временный перевод 12 работников в общежитие 1 с 31.10.'}],
+  log:[['app','29.10 21:10','Заявитель','Обращение подано'],['mod','30.10 08:05',MOD,'Ответственный: Vertex Holding (срок 03.11). Соисполнитель: HR-департамент КРЖ (срок 01.11)'],
+       ['ex','30.10 08:30','Vertex Holding','Принято в работу'],['ex','30.10 09:40','HR-департамент КРЖ','Часть выполнена: Согласован временный перевод 12 работников в общежитие 1 с 31.10.'],['ntf','30.10 08:30','Уведомление заявителю','Статус: В работе']]},
+ {id:'TRT-002409',date:'29.10.2026 14:03',type:'Жалоба',topic:'Уборка и стирка',author:'Касымов Д. А.',status:'work',
   descr:'Спецодежду вернули из стирки с пятнами мазута, второй раз подряд.',
-  log:[['app','29.10 14:03','Заявитель','Обращение подано'],['mod','29.10 14:20',MOD,'Направлено: Vertex Holding, срок 05.11'],['ntf','29.10 14:20','Уведомление заявителю','Статус: Направлено исполнителю'],
-       ['ex','29.10 16:40','Vertex Holding','Принято в работу'],['ntf','29.10 16:40','Уведомление заявителю','Статус: В работе']]},
- {id:'TRT-002404',date:'28.10.2026 11:20',type:'Жалоба',topic:'Транспорт',author:'Ержанов М. С.',ex:'vertex',status:'sent',due:'29.10.2026',over:true,
-  descr:'Автобус на смену 28.10 опоздал на 50 минут.',
-  log:[['app','28.10 11:20','Заявитель','Обращение подано'],['mod','28.10 11:45',MOD,'Направлено: Vertex Holding, срок 29.10'],['ntf','28.10 11:45','Уведомление заявителю','Статус: Направлено исполнителю']]},
- {id:'TRT-002401',date:'28.10.2026 09:30',type:'Жалоба',topic:'Оплата и графики',author:'Абдрахманова А. Т.',ex:null,status:'returned',due:null,retFrom:'union',
+  parts:[{k:'vertex',role:'main',st:'work',due:'2026-10-31',ext:{date:'2026-11-05',reason:'Нужна замена фильтров в прачечной, поставка 04.11'}}],
+  log:[['app','29.10 14:03','Заявитель','Обращение подано'],['mod','29.10 14:20',MOD,'Ответственный: Vertex Holding (срок 31.10)'],['ex','29.10 16:40','Vertex Holding','Принято в работу'],
+       ['ex','30.10 09:15','Vertex Holding','Запрос продления срока до 05.11: «Нужна замена фильтров в прачечной, поставка 04.11»']]},
+ {id:'TRT-002404',date:'28.10.2026 11:20',type:'Жалоба',topic:'Транспорт',author:'Ержанов М. С.',status:'sent',
+  descr:'Автобус на смену 28.10 опоздал на 50 минут.',parts:[{k:'vertex',role:'main',st:'sent',due:'2026-10-29'}],
+  log:[['app','28.10 11:20','Заявитель','Обращение подано'],['mod','28.10 11:45',MOD,'Ответственный: Vertex Holding (срок 29.10)'],['sys','29.10 09:00','Система','Напоминание исполнителю: срок истекает сегодня'],
+       ['sys','30.10 09:00','Система','Срок просрочен. Эскалация: руководителю Vertex Holding и модератору']]},
+ {id:'TRT-002401',date:'28.10.2026 09:30',type:'Жалоба',topic:'Оплата и графики',author:'Абдрахманова А. Т.',status:'returned',retFrom:'union',
   retComment:'Вопрос начисления за ночные смены — не компетенция профсоюза. Просим направить в HR-департамент.',
-  descr:'В расчётном листе за сентябрь не учтены 2 ночные смены.',
-  log:[['app','28.10 09:30','Заявитель','Обращение подано'],['mod','28.10 10:00',MOD,'Направлено: Профсоюз'],['ret','28.10 15:12','Профсоюз','Возвращено модератору: «Вопрос начисления за ночные смены — не компетенция профсоюза. Просим направить в HR-департамент.»']]},
- {id:'TRT-002398',date:'27.10.2026 18:11',type:'Жалоба',topic:'Льготы и гарантии',author:'Омаров Е. К.',ex:'hr',status:'closed',due:'03.11.2026',
+  descr:'В расчётном листе за сентябрь не учтены 2 ночные смены.',parts:[],
+  log:[['app','28.10 09:30','Заявитель','Обращение подано'],['mod','28.10 10:00',MOD,'Ответственный: Профсоюз'],['ret','28.10 15:12','Профсоюз','Возвращено модератору: «Вопрос начисления за ночные смены — не компетенция профсоюза. Просим направить в HR-департамент.»']]},
+ {id:'TRT-002398',date:'27.10.2026 18:11',type:'Жалоба',topic:'Льготы и гарантии',author:'Омаров Е. К.',status:'closed',
   descr:'Не выплачена материальная помощь к отпуску.',decision:'Материальная помощь начислена, выплата 05.11 вместе с авансом.',
-  log:[['app','27.10 18:11','Заявитель','Обращение подано'],['mod','27.10 18:30',MOD,'Направлено: HR-департамент КРЖ'],['ex','28.10 09:10','HR-департамент КРЖ','Принято в работу'],
+  parts:[{k:'hr',role:'main',st:'done',due:'2026-11-03',closedAt:'2026-10-30'}],
+  log:[['app','27.10 18:11','Заявитель','Обращение подано'],['mod','27.10 18:30',MOD,'Ответственный: HR-департамент КРЖ (срок 03.11)'],['ex','28.10 09:10','HR-департамент КРЖ','Принято в работу'],
        ['ex','30.10 09:05','HR-департамент КРЖ','Закрыто. Решение: Материальная помощь начислена, выплата 05.11 вместе с авансом.'],['ntf','30.10 09:05','Уведомление заявителю','Статус: Закрыто — оцените работу исполнителя']]},
- {id:'TRT-002390',date:'26.10.2026 12:00',type:'Предложение',topic:'Культура и спорт',author:'Мусина Л. Р.',ex:'union',status:'rated',due:'02.11.2026',rating:5,rComment:'Спасибо, быстро организовали!',
+ {id:'TRT-002390',date:'26.10.2026 12:00',type:'Предложение',topic:'Культура и спорт',author:'Мусина Л. Р.',status:'rated',rating:5,rComment:'Спасибо, быстро организовали!',
   descr:'Организовать поездку в театр для межвахтового отдыха.',decision:'Поездка в театр 22.11, запись в профкоме.',
-  log:[['app','26.10 12:00','Заявитель','Обращение подано'],['mod','26.10 12:40',MOD,'Направлено: Профсоюз'],['ex','27.10 10:00','Профсоюз','Принято в работу'],
-       ['ex','29.10 15:30','Профсоюз','Закрыто. Решение: Поездка в театр 22.11, запись в профкоме.'],['app','29.10 19:02','Заявитель','Оценка исполнителю: 5 из 5 — «Спасибо, быстро организовали!»']]},
- {id:'TRT-002377',date:'24.10.2026 08:20',type:'Жалоба',topic:'Проживание',author:'Жумабеков К. О.',ex:'vertex',status:'rated',due:'29.10.2026',rating:2,rComment:'Отопление починили только через 4 дня.',
+  parts:[{k:'union',role:'main',st:'done',due:'2026-11-02',closedAt:'2026-10-29'}],
+  log:[['app','26.10 12:00','Заявитель','Обращение подано'],['mod','26.10 12:40',MOD,'Ответственный: Профсоюз'],['ex','29.10 15:30','Профсоюз','Закрыто. Решение: Поездка в театр 22.11, запись в профкоме.'],['app','29.10 19:02','Заявитель','Оценка исполнителю: 5 из 5']]},
+ {id:'TRT-002377',date:'24.10.2026 08:20',type:'Жалоба',topic:'Проживание',author:'Жумабеков К. О.',status:'rated',rating:2,rComment:'Отопление починили только через 4 дня.',
   descr:'Не работает отопление в комнате 214.',decision:'Заменён радиатор в комнате 214.',
-  log:[['app','24.10 08:20','Заявитель','Обращение подано'],['mod','24.10 08:40',MOD,'Направлено: Vertex Holding'],['ex','24.10 10:00','Vertex Holding','Принято в работу'],
-       ['ex','28.10 17:00','Vertex Holding','Закрыто. Решение: Заменён радиатор в комнате 214.'],['app','28.10 21:10','Заявитель','Оценка исполнителю: 2 из 5 — «Отопление починили только через 4 дня.»']]},
- {id:'TRT-002365',date:'22.10.2026 19:45',type:'Предложение',topic:'Другое',author:'Ли В. А.',ex:null,status:'cancel',due:null,
-  descr:'Тестовое обращение.',log:[['app','22.10 19:45','Заявитель','Обращение подано'],['mod','23.10 09:00',MOD,'Отменено: дубль / тестовое обращение']]}
+  parts:[{k:'vertex',role:'main',st:'done',due:'2026-10-26',closedAt:'2026-10-28'}],
+  log:[['app','24.10 08:20','Заявитель','Обращение подано'],['mod','24.10 08:40',MOD,'Ответственный: Vertex Holding (срок 26.10)'],['ex','28.10 17:00','Vertex Holding','Закрыто с опозданием на 2 дня. Решение: Заменён радиатор.'],['app','28.10 21:10','Заявитель','Оценка исполнителю: 2 из 5']]},
+ // конфиденциальные
+ {id:'TRT-K-0012',conf:true,date:'30.10.2026 06:50',type:'Жалоба',topic:'Конфиденциально',author:'Бекова А. М.',status:'new',parts:[],
+  descr:'Мастер участка систематически повышает голос и угрожает лишить премии, если я пожалуюсь. Прошу не раскрывать мои данные.',
+  log:[['app','30.10 06:50','Заявитель','Конфиденциальное обращение подано. Доступ: только уполномоченное лицо']]},
+ {id:'TRT-K-0011',conf:true,date:'27.10.2026 22:15',type:'Жалоба',topic:'Конфиденциально',author:'Ахметов С. Т.',status:'work',
+  descr:'После жалобы на график меня перевели на худшую смену. Считаю это преследованием.',
+  parts:[{k:'hr',role:'main',st:'work',due:'2026-11-06'}],anon:true,
+  log:[['app','27.10 22:15','Заявитель','Конфиденциальное обращение подано'],['conf','28.10 09:00',CONF,'Рассмотрено. Направлено обезличенно: HR-департамент КРЖ (срок 06.11)'],['ex','28.10 11:00','HR-департамент КРЖ','Принято в работу']]}
 ];
 let role='mod', curId=null, fKpi=null;
 
 const $=id=>document.getElementById(id);
 function hide(id){$(id).classList.add('hidden')}
 function show(id){$(id).classList.remove('hidden')}
-function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove('on'),2600)}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove('on'),2800)}
 function chip(s){return `<span class="st ${ST[s][1]}">${ST[s][0]}</span>`}
-function exTag(k){return k?`<span class="party ${EX[k].cls}">${EX[k].name}</span>`:'<span class="muted">не назначен</span>'}
 function stars(n){return n?`<span class="stars">${'★'.repeat(n)}${'☆'.repeat(5-n)}</span>`:'<span class="muted">—</span>'}
-function now(){const d=new Date();return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
-function dueDate(days){const d=new Date();d.setDate(d.getDate()+Math.round(days*1.4));return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear()}
+function now(){const x=new Date();return String(x.getDate()).padStart(2,'0')+'.'+String(x.getMonth()+1).padStart(2,'0')+' '+String(x.getHours()).padStart(2,'0')+':'+String(x.getMinutes()).padStart(2,'0')}
+function addDays(n){const x=new Date(TODAY);x.setDate(x.getDate()+n);return x.toISOString().slice(0,10)}
 function cur(){return D.find(x=>x.id===curId)}
-function visible(){return role==='mod'?D:D.filter(r=>r.ex===role&&r.status!=='returned')}
+function main(r){return r.parts.find(p=>p.role==='main')}
+function active(r){return r.parts.filter(p=>p.st!=='returned')}
+function open_(r){return ['sent','work'].includes(r.status)}
+function daysLeft(due){return Math.ceil((d(due)-TODAY)/864e5)}
+function leftTag(due,done){if(!due||done)return'<span class="muted">—</span>';const n=daysLeft(due);
+  return n<0?`<span class="left bad">просрочено ${-n} дн</span>`:n===0?'<span class="left soon">сегодня</span>':n===1?'<span class="left soon">1 дн</span>':`<span class="left ok">${n} дн</span>`}
+function partOver(p){return p.due&&!['done','returned'].includes(p.st)&&daysLeft(p.due)<0}
+function isOver(r){return open_(r)&&active(r).some(partOver)}
+function isSoon(r){return open_(r)&&active(r).some(p=>!['done'].includes(p.st)&&daysLeft(p.due)>=0&&daysLeft(p.due)<=1)}
+function hasExt(r){return r.parts.some(p=>p.ext)}
 function addLog(r,kind,who,text){r.log.push([kind,now(),who,text])}
 function notify(r){if(NOTIFY[r.status])addLog(r,'ntf','Уведомление заявителю','Статус: '+NOTIFY[r.status])}
+function authorFor(r){return r.conf&&!['conf'].includes(role)?'<span class="muted">скрыто (конфиденциально)</span>':r.author}
+function exList(r){const a=active(r);if(!a.length)return'<span class="muted">не назначен</span>';
+  return a.map(p=>`<span class="party ${EX[p.k].cls}">${EX[p.k].name}</span>${p.role==='co'?'<span class="co">соисп.</span>':''}`).join(' ')}
+function visible(){
+  if(role==='mod')return D.filter(r=>!r.conf);
+  if(role==='conf')return D.filter(r=>r.conf);
+  return D.filter(r=>r.parts.some(p=>p.k===role&&p.st!=='returned'));
+}
+function myPart(r){return r.parts.find(p=>p.k===role&&p.st!=='returned')}
+function isModLike(r){return role==='mod'&&!r.conf||role==='conf'&&r.conf}
 
 Object.entries(ST).forEach(([k,v])=>$('fStatus').insertAdjacentHTML('beforeend',`<option value="${k}">${v[0]}</option>`));
 Object.entries(EX).forEach(([k,v])=>$('fExec').insertAdjacentHTML('beforeend',`<option value="${k}">${v.name}</option>`));
-TOPICS.forEach(t=>$('fTopic').insertAdjacentHTML('beforeend',`<option>${t}</option>`));
 
-function setRole(r){role=r;fKpi=null;curId=null;closeEdit()}
+function setRole(r){role=r;fKpi=null;curId=null;$('fExec').value='';closeEdit()}
 function kpi(cls,n,label,key){return `<div class="kpi ${cls}" onclick="fKpi=fKpi==='${key}'?null:'${key}';renderGrid()" style="${fKpi===key?'border-color:#197de1;box-shadow:0 0 0 2px #d6e8fb':''}"><b>${n}</b><span>${label}</span></div>`}
 const KF={
-  new:r=>r.status==='new', returned:r=>r.status==='returned', atex:r=>['sent','work'].includes(r.status), over:r=>r.over,
-  done:r=>['closed','rated'].includes(r.status), sent:r=>r.status==='sent', work:r=>r.status==='work'
+  new:r=>r.status==='new', returned:r=>r.status==='returned', atex:r=>open_(r), over:isOver, ext:hasExt,
+  done:r=>['closed','rated'].includes(r.status),
+  mynew:r=>(myPart(r)||{}).st==='sent', mywork:r=>(myPart(r)||{}).st==='work', myover:r=>{const p=myPart(r);return p&&partOver(p)}, mydone:r=>(myPart(r)||{}).st==='done'
 };
 function renderGrid(){
   const V=visible(), c=k=>V.filter(KF[k]).length;
-  $('brTitle').textContent=role==='mod'?'Обращения — все (модератор)':'Обращения — направленные: '+EX[role].name;
-  $('fExecWrap').classList.toggle('hidden',role!=='mod');
+  $('brTitle').innerHTML=role==='mod'?'Обращения — все (модератор)':role==='conf'?'Конфиденциальные обращения <span class="lock">ОГРАНИЧЕННЫЙ ДОСТУП</span>':'Обращения — направленные: '+EX[role].name;
+  $('fExecWrap').classList.toggle('hidden',!['mod','conf'].includes(role));
   $('parts').classList.toggle('hidden',role!=='mod');
+  $('kpis').innerHTML=['mod','conf'].includes(role)
+    ? kpi('blue',c('new'),'Новые — нужно распределить','new')+(role==='mod'?kpi('red',c('returned'),'Возвращены исполнителями','returned'):'')+kpi('orange',c('atex'),'У исполнителей, не закрыты','atex')+kpi('red',c('over'),'Просрочены','over')+kpi('orange',c('ext'),'Запрос продления срока','ext')+kpi('green',c('done'),'Закрыты','done')
+    : kpi('blue',c('mynew'),'Новые, ждут принятия','mynew')+kpi('orange',c('mywork'),'В работе','mywork')+kpi('red',c('myover'),'Мой срок просрочен','myover')+kpi('green',c('mydone'),'Моя часть выполнена','mydone');
   if(role==='mod'){
     $('parts').innerHTML='<h3>Исполнение по участникам</h3><div class="wrap">'+Object.entries(EX).map(([k,e])=>{
-      const R=D.filter(r=>r.ex===k), w=R.filter(r=>['sent','work'].includes(r.status)).length, o=R.filter(r=>r.over).length,
-            d=R.filter(r=>['closed','rated'].includes(r.status)).length, rt=R.filter(r=>r.rating), avg=rt.length?(rt.reduce((a,r)=>a+r.rating,0)/rt.length).toFixed(1):'—';
+      const P=D.filter(r=>!r.conf).flatMap(r=>r.parts.filter(p=>p.k===k).map(p=>({p,r})));
+      const w=P.filter(x=>['sent','work'].includes(x.p.st)).length,o=P.filter(x=>partOver(x.p)).length,dn=P.filter(x=>x.p.st==='done').length;
+      const rt=D.filter(r=>r.rating&&main(r)&&main(r).k===k),avg=rt.length?(rt.reduce((a,r)=>a+r.rating,0)/rt.length).toFixed(1):'—';
       return `<div class="pc ${$('fExec').value===k?'on':''}" onclick="$('fExec').value=$('fExec').value==='${k}'?'':'${k}';renderGrid()"><div class="nm"><i style="background:${e.dot}"></i>${e.name}</div>
-        <div class="nums"><div><b>${w}</b><span>в работе</span></div><div class="${o?'red':''}"><b>${o}</b><span>просрочено</span></div><div><b>${d}</b><span>решено</span></div><div><b>${avg}</b><span>ср. оценка</span></div></div></div>`}).join('')+'</div>';
+        <div class="nums"><div><b>${w}</b><span>в работе</span></div><div class="${o?'red':''}"><b>${o}</b><span>просрочено</span></div><div><b>${dn}</b><span>решено</span></div><div><b>${avg}</b><span>ср. оценка</span></div></div></div>`}).join('')+'</div>';
   }
-  $('kpis').innerHTML=role==='mod'
-    ? kpi('blue',c('new'),'Новые — нужно распределить','new')+kpi('red',c('returned'),'Возвращены исполнителями','returned')+kpi('orange',c('atex'),'У исполнителей, не обработаны','atex')+kpi('red',c('over'),'Просрочены','over')+kpi('green',c('done'),'Обработаны (закрыты)','done')
-    : kpi('blue',c('sent'),'Новые, ждут принятия','sent')+kpi('orange',c('work'),'В работе','work')+kpi('red',c('over'),'Просрочены','over')+kpi('green',c('done'),'Закрыты мной','done');
-  const fs=$('fStatus').value,fe=$('fExec').value,ft=$('fType').value,fp=$('fTopic').value,tx=$('fText').value.toLowerCase();
-  const rows=V.filter(r=>(!fKpi||KF[fKpi](r))&&(!fs||r.status===fs)&&(!fe||(fe==='none'?!r.ex:r.ex===fe))&&(!ft||r.type===ft)&&(!fp||r.topic===fp)&&(!tx||(r.id+r.author+r.descr).toLowerCase().includes(tx)));
-  $('grid').innerHTML=rows.map(r=>`<tr class="${r.over?'overdue':''} ${r.id===curId?'sel':''}" onclick="selRow('${r.id}')" ondblclick="openEdit('${r.id}')">
-    <td>${r.id}</td><td>${r.date}</td><td>${r.type}</td><td>${r.topic}</td><td>${r.author}</td><td>${exTag(r.ex)}</td><td>${chip(r.status)}</td>
-    <td style="${r.over?'color:#c62828;font-weight:600':''}">${r.due||'—'}</td><td>${stars(r.rating)}</td></tr>`).join('')
-    || '<tr><td colspan="9" class="muted" style="text-align:center;padding:20px">Нет обращений</td></tr>';
+  const fs=$('fStatus').value,fe=$('fExec').value,fdv=$('fDue').value,ft=$('fType').value,tx=$('fText').value.toLowerCase();
+  const rows=V.filter(r=>(!fKpi||KF[fKpi](r))&&(!fs||r.status===fs)&&(!fe||(fe==='none'?!active(r).length:active(r).some(p=>p.k===fe)))
+    &&(!fdv||(fdv==='over'?isOver(r):fdv==='soon'?isSoon(r):hasExt(r)))&&(!ft||r.type===ft)&&(!tx||(r.id+r.author+r.descr).toLowerCase().includes(tx)));
+  $('grid').innerHTML=rows.map(r=>{const m=main(r),mp=['mod','conf'].includes(role)?m:myPart(r),done=!open_(r);return `<tr class="${isOver(r)?'overdue':''} ${r.id===curId?'sel':''} ${r.conf?'conf':''}" onclick="selRow('${r.id}')" ondblclick="openEdit('${r.id}')">
+    <td>${r.id}${r.conf?'<span class="lock">КОНФ.</span>':''}</td><td>${r.date}</td><td>${r.type}</td><td>${r.topic}</td><td>${authorFor(r)}</td><td>${exList(r)}</td><td>${chip(r.status)}${hasExt(r)&&['mod','conf'].includes(role)?' <span class="st s-returned">продление?</span>':''}</td>
+    <td>${mp&&mp.due?fd(mp.due):'—'}</td><td>${mp?leftTag(mp.due,done||mp.st==='done'):'<span class="muted">—</span>'}</td><td>${stars(r.rating)}</td></tr>`}).join('')
+    || '<tr><td colspan="10" class="muted" style="text-align:center;padding:20px">Нет обращений</td></tr>';
   $('rows').textContent=`Строк: ${rows.length} из ${V.length}`;
+  $('brNote').innerHTML=role==='mod'?'Макет, данные вымышленные, «сегодня» = 30.10.2026. Конфиденциальные обращения модератору не видны — они идут уполномоченному лицу (переключите роль слева).'
+    :role==='conf'?`Сюда попадают обращения, которые работник отметил как конфиденциальные (${CONF_TOPICS.toLowerCase()}). Модератор и исполнители их не видят. Уполномоченный рассматривает сам или направляет исполнителю обезличенно.`
+    :'Вы видите только обращения, где ваша организация — исполнитель или соисполнитель.';
 }
 function selRow(id){curId=id;renderGrid()}
 function showBrowse(){$('tabBrowse').classList.add('on');$('tabEdit').classList.remove('on');show('browse');hide('edit');renderGrid()}
 function closeEdit(){hide('tabEdit');showBrowse()}
-function openEdit(id){
-  curId=id;show('tabEdit');$('tabEdit').classList.add('on');$('tabBrowse').classList.remove('on');hide('browse');show('edit');
-  $('tabEditTitle').textContent=id;renderEdit();
-}
+function openEdit(id){curId=id;show('tabEdit');$('tabEdit').classList.add('on');$('tabBrowse').classList.remove('on');hide('browse');show('edit');$('tabEditTitle').textContent=id;renderEdit()}
+
 function renderEdit(){
-  const r=cur(), s=r.status;
-  $('edTitle').innerHTML=`Обращение ${r.id} &nbsp; ${chip(s)}`;
+  const r=cur(),s=r.status,m=main(r),mine=myPart(r),ML=isModLike(r);
+  $('edTitle').innerHTML=`Обращение ${r.id} &nbsp; ${chip(s)}${r.conf?' <span class="lock">КОНФИДЕНЦИАЛЬНО</span>':''}`;
   const idx={new:0,returned:0,sent:1,work:2,closed:3,rated:4,cancel:-1}[s];
-  $('path').innerHTML=PATH.map((p,i)=>{
-    let c=i<idx?'done':i===idx?'cur':'', label=p[1];
-    if(s==='returned'&&i===1){c='bad';label='Возвращено'}
-    if(s==='rated'&&i===4)c='done';
+  $('path').innerHTML=PATH.map((p,i)=>{let c=i<idx?'done':i===idx?'cur':'',label=p[1];
+    if(s==='returned'&&i===1){c='bad';label='Возвращено'} if(s==='rated'&&i===4)c='done';
     return `<div class="stp ${c}"><i>${c==='done'?'✓':i+1}</i><br>${label}</div>`}).join('');
   let al='';
-  if(s==='returned')al+=`<div class="alert red"><b>${EX[r.retFrom].name} вернул обращение модератору.</b><br>Комментарий: ${r.retComment}</div>`;
-  if(s==='new'&&role==='mod')al+=`<div class="alert blue">Новое обращение. Выберите ответственного исполнителя и направьте на исполнение.</div>`;
-  if(s==='sent'&&role!=='mod')al+=`<div class="alert blue">Обращение направлено вам модератором${r.sComment?': «'+r.sComment+'»':''}. Примите в работу или верните модератору, если вопрос не в вашей компетенции.</div>`;
-  if(s==='closed')al+=`<div class="alert green">Обращение закрыто исполнителем. Заявителю отправлено уведомление, ожидается оценка.</div>`;
+  if(r.conf&&role==='conf')al+=`<div class="alert red"><b>Конфиденциальное обращение.</b> Видит только уполномоченное лицо. Модератору не показывается. При передаче исполнителю данные заявителя скрываются.</div>`;
+  if(r.conf&&role!=='conf')al+=`<div class="alert red"><b>Конфиденциальное обращение, передано обезличенно.</b> Данные заявителя скрыты. Не пытайтесь установить личность заявителя.</div>`;
+  if(s==='returned')al+=`<div class="alert red"><b>${EX[r.retFrom].name} вернул обращение.</b><br>Комментарий: ${r.retComment}</div>`;
+  if(s==='new'&&ML)al+=`<div class="alert blue">Новое обращение. Назначьте ответственного исполнителя, при необходимости соисполнителей, и сроки.</div>`;
+  r.parts.filter(p=>p.ext).forEach(p=>{if(ML)al+=`<div class="alert red"><b>${EX[p.k].name} просит продлить срок</b> с ${fd(p.due)} до ${fd(p.ext.date)}.<br>Причина: ${p.ext.reason}
+     <div style="margin-top:8px"><button class="btn ok" onclick="extDecide('${p.k}',true)">Согласовать продление</button> <button class="btn" onclick="extDecide('${p.k}',false)">Отклонить</button></div></div>`;
+     else if(p.k===role)al+=`<div class="alert blue">Запрос продления до ${fd(p.ext.date)} отправлен модератору, ожидает решения.</div>`});
+  if(mine&&mine.role==='main'&&open_(r)){const pend=active(r).filter(p=>p.role==='co'&&p.st!=='done');
+    if(pend.length)al+=`<div class="alert blue">Вы — ответственный исполнитель. Закрыть обращение можно, когда соисполнители выполнят свою часть. Ожидаем: ${pend.map(p=>EX[p.k].name).join(', ')}.</div>`;
+    else if(active(r).some(p=>p.role==='co'))al+=`<div class="alert green">Все соисполнители выполнили свою часть — можно закрывать обращение.</div>`}
+  if(mine&&mine.role==='co'&&open_(r))al+=`<div class="alert blue">Вы — соисполнитель. Ответственный: ${EX[m.k].name}. Отметьте свою часть выполненной, ответственный закроет обращение.</div>`;
+  if(s==='closed')al+=`<div class="alert green">Обращение закрыто. Заявителю отправлено уведомление, ожидается оценка.</div>`;
   $('alerts').innerHTML=al;
   $('form').innerHTML=`
     <div class="l">Номер</div><div class="v">${r.id}</div>
     <div class="l">Дата регистрации</div><div class="v">${r.date}</div>
-    <div class="l">Заявитель</div><div class="v">${r.author}</div>
+    <div class="l">Заявитель</div><div class="v">${authorFor(r)}</div>
     <div class="l">Источник</div><div class="v">Мобильное приложение</div>
     <div class="l">Тип</div><div class="v">${r.type}</div>
     <div class="l">Тема</div><div class="v">${r.topic}</div>
-    <div class="l">Исполнитель</div><div class="v">${exTag(r.ex)}</div>
-    <div class="l">Срок исполнения</div><div class="v" style="${r.over?'color:#c62828;font-weight:600':''}">${r.due||'—'}${r.over?' — просрочено':''}</div>`;
+    <div class="l">Маршрут</div><div class="v">${r.conf?'Конфиденциальный — уполномоченное лицо':'Общий — модератор'}</div>
+    <div class="l">Общий срок</div><div class="v">${m?fd(m.due)+' &nbsp; '+leftTag(m.due,!open_(r)):'—'}</div>`;
   $('eDescr').textContent=r.descr;
-  $('eDecision').innerHTML=r.decision||'<span class="muted">Заполняет исполнитель при закрытии</span>';
+  $('eDecision').innerHTML=r.decision||'<span class="muted">Заполняет ответственный исполнитель при закрытии</span>';
+  // контроль исполнения
+  if(r.parts.length){
+    $('ctlBox').innerHTML=`<h3>Исполнители и контроль сроков</h3><table class="ctl"><tr><th>Участник</th><th>Роль</th><th>Срок</th><th>Осталось</th><th>Статус части</th><th></th></tr>`+
+      r.parts.map(p=>`<tr style="${p.st==='returned'?'opacity:.55':''}"><td><span class="party ${EX[p.k].cls}">${EX[p.k].name}</span>${p.res?`<div class="res">${p.res}</div>`:''}</td>
+        <td><span class="rl ${p.role}">${p.role==='main'?'Ответственный':'Соисполнитель'}</span></td><td>${fd(p.due)}${p.ext?`<div class="res" style="color:#c62828">просит до ${fd(p.ext.date)}</div>`:''}</td>
+        <td>${leftTag(p.due,p.st==='done'||p.st==='returned'||!open_(r))}</td><td><span class="ps ${p.st}">${PS[p.st]}</span></td>
+        <td>${ML&&open_(r)&&!['done','returned'].includes(p.st)?`<button class="btn" onclick="remind('${p.k}')">Напомнить</button> <button class="btn" onclick="openText('due','${p.k}')">Срок</button>`:''}</td></tr>`).join('')+'</table>'+
+      `<div class="ctlrow"><span>Автонапоминание: <b>за 1 день до срока</b></span><span>При просрочке: <b>эскалация руководителю исполнителя и ${r.conf?'уполномоченному':'модератору'}</b></span><span>Продление: <b>по запросу исполнителя, согласует ${r.conf?'уполномоченный':'модератор'}</b></span></div>`;
+  } else $('ctlBox').innerHTML='<h3>Исполнители и контроль сроков</h3><div class="muted">Исполнители не назначены.</div>';
   $('rateBox').innerHTML=`<h3>Оценка работы исполнителя заявителем</h3>`+(r.rating
-    ? `<div>${stars(r.rating)} &nbsp; <b>${r.rating} из 5</b> — ${EX[r.ex].name}</div>${r.rComment?`<div class="muted" style="margin-top:4px">«${r.rComment}»</div>`:''}`
+    ? `<div>${stars(r.rating)} &nbsp; <b>${r.rating} из 5</b> — ${EX[m.k].name}</div>${r.rComment?`<div class="muted" style="margin-top:4px">«${r.rComment}»</div>`:''}`
     : `<div class="muted">${s==='closed'?'Заявитель ещё не оценил. Оценку он ставит в мобильном приложении.':'Доступна заявителю после закрытия обращения.'}</div>`);
+  // действия
   const A=[];
-  if(role==='mod'){
-    if(['new','returned'].includes(s))A.push(`<button class="btn primary" onclick="openSend()">Направить исполнителю</button>`);
-    if(['sent','work'].includes(s))A.push(`<button class="btn" onclick="openSend()">Перенаправить другому исполнителю</button>`,`<button class="btn" onclick="toast('Напоминание отправлено исполнителю')">Напомнить исполнителю</button>`);
-    if(s==='closed')A.push(`<button class="btn" onclick="toast('Push-напоминание об оценке отправлено заявителю')">Напомнить заявителю об оценке</button>`);
+  if(ML){
+    if(['new','returned'].includes(s))A.push(`<button class="btn primary" onclick="openSend()">${r.conf?'Направить исполнителю обезличенно':'Направить исполнителям'}</button>`);
+    if(r.conf&&['new','work'].includes(s)&&!r.parts.length)A.push(`<button class="btn ok" onclick="openText('selfclose')">Рассмотреть самостоятельно и закрыть</button>`);
+    if(open_(r))A.push(`<button class="btn" onclick="openSend()">Изменить исполнителей</button>`);
     if(s==='closed')A.push(`<button class="btn" onclick="simRate()">Демо: заявитель поставил оценку</button>`);
     A.push('<span class="sp"></span>');
     if(['new','returned'].includes(s))A.push(`<button class="btn danger" onclick="doCancel()">Отменить обращение</button>`);
-  } else if(r.ex===role){
-    if(s==='sent')A.push(`<button class="btn primary" onclick="doAccept()">Принять в работу</button>`);
-    if(['sent','work'].includes(s))A.push(`<button class="btn ok" onclick="openText('close')">Закрыть с решением</button>`,'<span class="sp"></span>',`<button class="btn warn" onclick="openText('return')">Вернуть модератору</button>`);
+  } else if(mine&&open_(r)){
+    if(mine.st==='sent')A.push(`<button class="btn primary" onclick="doAccept()">Принять в работу</button>`);
+    if(mine.role==='co'&&mine.st!=='done')A.push(`<button class="btn ok" onclick="openText('part')">Моя часть выполнена</button>`);
+    if(mine.role==='main'){const pend=active(r).some(p=>p.role==='co'&&p.st!=='done');
+      A.push(`<button class="btn ok" ${pend?'disabled style="opacity:.45;cursor:not-allowed" title="Ждём соисполнителей"':''} onclick="openText('close')">Закрыть с решением</button>`)}
+    if(mine.st!=='done'&&!mine.ext)A.push(`<button class="btn" onclick="openText('ext')">Запросить продление срока</button>`);
+    A.push('<span class="sp"></span>');
+    if(mine.st!=='done')A.push(`<button class="btn warn" onclick="openText('return')">Вернуть ${r.conf?'уполномоченному':'модератору'}</button>`);
   }
   A.push(`<button class="btn" onclick="closeEdit()">Закрыть окно</button>`);
   $('actions').innerHTML=A.join('');
-  $('log').innerHTML=r.log.slice().reverse().map(l=>`<li class="${l[0]}"><span class="who">${l[2]}</span>: ${l[3]}<br><span class="t">${l[1]}</span></li>`).join('');
+  $('log').innerHTML=r.log.slice().reverse().map(l=>`<li class="${l[0]==='conf'?'mod':l[0]==='sys'?'ret':l[0]}"><span class="who">${l[2]==='Заявитель'&&r.conf&&role!=='conf'?'Заявитель (скрыт)':l[2]}</span>: ${l[3]}<br><span class="t">${l[1]}</span></li>`).join('');
 }
+
 function openSend(){
-  const r=cur();
+  const r=cur(), had=r.parts;
+  $('sTitle').textContent=r.conf?'Направить исполнителю обезличенно':'Направить на исполнение';
   $('sendInfo').textContent=`${r.id} · ${r.type} · ${r.topic}`;
-  $('opts').innerHTML=Object.entries(EX).map(([k,e])=>{const dis=r.status==='returned'&&r.retFrom===k||r.ex===k&&r.status!=='returned';
-    return `<label class="${dis?'dis':''}"><input type="radio" name="ex" value="${k}" ${dis?'disabled':''}><span><b>${e.name}</b><small>${e.d}</small>${dis?'<small>уже был назначен</small>':''}</span></label>`}).join('');
-  $('sComment').value='';$('sErr').textContent='';show('dlgSend');
+  const dflt=addDays(5);
+  $('opts').innerHTML='<div class="h">Отв.</div><div class="h">Участник</div><div class="h">Соисп.</div><div class="h">Срок</div>'+Object.entries(EX).map(([k,e])=>{
+    const p=had.find(x=>x.k===k&&x.st!=='returned'),ret=r.status==='returned'&&r.retFrom===k;
+    return `<input type="radio" name="mainEx" value="${k}" ${p&&p.role==='main'?'checked':''} ${ret?'disabled':''} onchange="syncCo()">
+      <div class="${ret?'dis':''}"><b>${e.name}</b><div class="muted" style="font-size:11px">${ret?'вернул обращение':e.d}</div></div>
+      <input type="checkbox" name="coEx" value="${k}" ${p&&p.role==='co'?'checked':''} ${ret?'disabled':''}>
+      <input type="date" id="due_${k}" value="${p?p.due:dflt}">`}).join('');
+  $('anonWrap').classList.toggle('hidden',!r.conf);
+  $('sComment').value='';$('sErr').textContent='';syncCo();show('dlgSend');
 }
+function syncCo(){const m=(document.querySelector('input[name=mainEx]:checked')||{}).value;document.querySelectorAll('input[name=coEx]').forEach(c=>{if(c.value===m){c.checked=false;c.disabled=true}else if(!(cur().status==='returned'&&cur().retFrom===c.value))c.disabled=false})}
 function doSend(){
-  const k=(document.querySelector('input[name=ex]:checked')||{}).value;
-  if(!k){$('sErr').textContent='Выберите исполнителя';return}
-  const r=cur(), days=+$('sDue').value;
-  r.ex=k;r.status='sent';r.due=dueDate(days);r.over=false;r.sComment=$('sComment').value;
-  addLog(r,'mod',MOD,`Направлено: ${EX[k].name}, срок ${r.due}${r.sComment?'. Комментарий: «'+r.sComment+'»':''}`);notify(r);
-  hide('dlgSend');renderEdit();toast('Направлено: '+EX[k].name+'. Заявитель уведомлён.');
+  const r=cur(),mk=(document.querySelector('input[name=mainEx]:checked')||{}).value;
+  if(!mk){$('sErr').textContent='Выберите ответственного исполнителя';return}
+  const co=[...document.querySelectorAll('input[name=coEx]:checked')].map(c=>c.value).filter(k=>k!==mk);
+  const old=r.parts;
+  r.parts=[mk,...co].map(k=>{const o=old.find(p=>p.k===k&&p.st!=='returned');return {k,role:k===mk?'main':'co',st:o?o.st:'sent',due:$('due_'+k).value,res:o&&o.res}});
+  if(r.conf)r.anon=true;
+  if(['new','returned'].includes(r.status))r.status='sent';
+  const txt=`Ответственный: ${EX[mk].name} (срок ${fd(r.parts[0].due)})`+(co.length?'. Соисполнители: '+r.parts.slice(1).map(p=>`${EX[p.k].name} (срок ${fd(p.due)})`).join(', '):'')+($('sComment').value?`. Комментарий: «${$('sComment').value}»`:'');
+  addLog(r,r.conf?'conf':'mod',r.conf?CONF:MOD,(r.conf?'Направлено обезличенно. ':'')+txt);notify(r);
+  hide('dlgSend');renderEdit();toast((co.length?'Направлено исполнителю и соисполнителям':'Направлено исполнителю')+'. Заявитель уведомлён.');
 }
-function doAccept(){const r=cur();r.status='work';addLog(r,'ex',EX[role].name,'Принято в работу');notify(r);renderEdit();toast('Принято в работу. Заявитель уведомлён.')}
-let tMode=null;
-function openText(m){
-  tMode=m;$('tErr').textContent='';$('tText').value='';
-  $('tTitle').textContent=m==='close'?'Закрыть обращение':'Вернуть модератору';
-  $('tHint').textContent=m==='close'?'Решение увидит заявитель в приложении и сможет оценить вашу работу.':'Укажите, почему обращение не относится к вам. Модератор направит его другому исполнителю.';
-  $('tLabel').textContent=m==='close'?'Решение / что сделано *':'Комментарий *';
-  $('tOk').textContent=m==='close'?'Закрыть':'Вернуть';$('tOk').onclick=doText;show('dlgText');
+function recompute(r){if(r.status==='sent'&&active(r).some(p=>p.st!=='sent'))r.status='work'}
+function doAccept(){const r=cur(),p=myPart(r);p.st='work';addLog(r,'ex',EX[role].name,'Принято в работу');const was=r.status;recompute(r);if(was!==r.status)notify(r);renderEdit();toast('Принято в работу')}
+function remind(k){const r=cur();addLog(r,'sys','Система',`Напоминание о сроке отправлено: ${EX[k].name}`);renderEdit();toast('Напоминание отправлено: '+EX[k].name)}
+function extDecide(k,ok){const r=cur(),p=r.parts.find(x=>x.k===k);
+  addLog(r,r.conf?'conf':'mod',r.conf?CONF:MOD,ok?`Продление согласовано: ${EX[k].name}, новый срок ${fd(p.ext.date)}`:`Продление отклонено: ${EX[k].name}, срок остаётся ${fd(p.due)}`);
+  if(ok)p.due=p.ext.date;delete p.ext;renderEdit();toast(ok?'Срок продлён':'Продление отклонено')}
+let tMode=null,tKey=null;
+function openText(m,k){
+  tMode=m;tKey=k;$('tErr').textContent='';$('tText').value='';
+  const T={close:['Закрыть обращение','Итоговое решение увидит заявитель и сможет оценить работу.','Итоговое решение *','Закрыть'],
+    part:['Моя часть выполнена','Результат увидят ответственный исполнитель и модератор.','Что сделано *','Отметить выполненной'],
+    return:['Вернуть обращение','Укажите, почему обращение не относится к вам.','Комментарий *','Вернуть'],
+    ext:['Запросить продление срока','Запрос уйдёт на согласование.','Причина *','Отправить запрос'],
+    due:['Изменить срок исполнения','Исполнитель получит уведомление о новом сроке.','Комментарий','Сохранить'],
+    selfclose:['Закрыть обращение','Обращение рассмотрено уполномоченным лицом без передачи исполнителям.','Итоговое решение *','Закрыть']}[m];
+  $('tTitle').textContent=T[0];$('tHint').textContent=T[1];$('tLabel').textContent=T[2];$('tOk').textContent=T[3];
+  $('tDateWrap').classList.toggle('hidden',!['ext','due'].includes(m));
+  if(['ext','due'].includes(m)){const p=m==='ext'?myPart(cur()):cur().parts.find(x=>x.k===k);const x=new Date(d(p.due));x.setDate(x.getDate()+5);$('tDate').value=x.toISOString().slice(0,10)}
+  $('tOk').onclick=doText;show('dlgText');
 }
 function doText(){
   const v=$('tText').value.trim(),r=cur();
-  if(v.length<3){$('tErr').textContent='Заполните поле';return}
-  if(tMode==='close'){r.status='closed';r.decision=v;r.over=false;addLog(r,'ex',EX[role].name,'Закрыто. Решение: '+v);notify(r);toast('Обращение закрыто. Заявитель уведомлён.')}
-  else{r.retFrom=r.ex;r.retComment=v;r.ex=null;r.status='returned';r.over=false;r.due=null;addLog(r,'ret',EX[role].name,'Возвращено модератору: «'+v+'»');toast('Возвращено модератору')}
+  if(tMode!=='due'&&v.length<3){$('tErr').textContent='Заполните поле';return}
+  const me=role==='conf'?CONF:EX[role]&&EX[role].name, p=myPart(r);
+  if(tMode==='close'||tMode==='selfclose'){r.status='closed';r.decision=v;if(p){p.st='done';p.closedAt=TODAY.toISOString().slice(0,10)}addLog(r,role==='conf'?'conf':'ex',me,'Закрыто. Решение: '+v);notify(r);toast('Обращение закрыто, заявитель уведомлён')}
+  if(tMode==='part'){p.st='done';p.res=v;addLog(r,'ex',me,'Часть выполнена: '+v);recompute(r);toast('Часть отмечена выполненной, ответственный уведомлён')}
+  if(tMode==='ext'){p.ext={date:$('tDate').value,reason:v};addLog(r,'ex',me,`Запрос продления срока до ${fd(p.ext.date)}: «${v}»`);toast('Запрос продления отправлен')}
+  if(tMode==='due'){const q=r.parts.find(x=>x.k===tKey);addLog(r,r.conf?'conf':'mod',r.conf?CONF:MOD,`Срок для ${EX[tKey].name} изменён: ${fd(q.due)} → ${fd($('tDate').value)}${v?'. '+v:''}`);q.due=$('tDate').value;toast('Срок изменён, исполнитель уведомлён')}
+  if(tMode==='return'){p.st='returned';addLog(r,'ret',me,`Отказ от исполнения (${p.role==='main'?'ответственный':'соисполнитель'}): «${v}»`);
+    if(p.role==='main'){r.status='returned';r.retFrom=role;r.retComment=v;r.parts=r.parts.filter(x=>x!==p).map(x=>({...x}));r.parts.forEach(x=>x.role='co');r.parts.push(p)}
+    toast(p.role==='main'?'Возвращено — нужно назначить нового ответственного':'Вы исключены из соисполнителей, модератор уведомлён')}
   hide('dlgText');
   if(tMode==='return')closeEdit();else renderEdit();
 }
-function doCancel(){const r=cur();r.status='cancel';addLog(r,'mod',MOD,'Отменено');notify(r);renderEdit();toast('Отменено, заявитель уведомлён')}
+function doCancel(){const r=cur();r.status='cancel';addLog(r,r.conf?'conf':'mod',r.conf?CONF:MOD,'Отменено');notify(r);renderEdit();toast('Отменено, заявитель уведомлён')}
 function simRate(){const r=cur();r.rating=4;r.rComment='Хорошо, но можно быстрее';r.status='rated';addLog(r,'app','Заявитель',`Оценка исполнителю: 4 из 5 — «${r.rComment}»`);renderEdit();toast('Заявитель оценил работу: 4 из 5')}
 
 renderGrid();
