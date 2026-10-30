@@ -101,7 +101,7 @@
   <p>Как работает модуль «Предложения по улучшению»:</p>
   <ul>
     <li>Работник выбирает <b>тип и тему</b> (без деления по ответственным), пишет текст, прикладывает фото.</li>
-    <li><b>Конфиденциальные</b> (руководитель, конфликт, давление, преследование) идут не модератору, а уполномоченному лицу; данные заявителя скрыты.</li>
+    <li>Деликатные обращения (руководитель, конфликт, давление) модератор сам отмечает как конфиденциальные — их рассматривает и отвечает модератор, работник ничего не выбирает.</li>
     <li>Обычное обращение получает <b>модератор</b> и направляет ответственному исполнителю (Vertex Holding, Профсоюз или HR-департамент КРЖ), при необходимости с соисполнителями, и ставит срок.</li>
     <li>Работнику приходят <b>push-уведомления о статусах</b>: Получено → Направлено исполнителю → В работе → Закрыто.</li>
     <li>После закрытия работник видит решение и <b>оценивает работу исполнителя</b> (1–5 звёзд + комментарий).</li>
@@ -134,22 +134,14 @@
 <script>
 const TOPICS=['Питание','Проживание','Уборка','Стирка и бытовые услуги','Транспорт','Оплата, графики, отпуска','Охрана труда и СИЗ','Льготы и гарантии','Культура, спорт, досуг','Защита трудовых прав','Идея / инициатива','Другое'];
 const TYPES=['Жалоба','Предложение','Благодарность'];
-const GROUPS=[
-  {g:'Сервис и условия',who:'ЕСО Vertex',cls:'g-eso',items:[['','Питание'],['','Проживание'],['','Уборка'],['','Стирка и бытовые услуги'],['','Транспорт / доставка']]},
-  {g:'Труд и персонал',who:'Работодатель',cls:'g-emp',items:[['','Оплата, графики, отпуска'],['','Охрана труда и СИЗ'],['','Льготы и гарантии']]},
-  {g:'Профсоюз и социум',who:'Профсоюз',cls:'g-un',items:[['','Культура, спорт, досуг'],['','Защита трудовых прав'],['','Идея / инициатива']]},
-  {g:'Другое',who:'Координатор',cls:'g-emp',items:[['','Конфиденциально'],['','Не знаю, куда отнести']]}
-];
-const WHO={};GROUPS.forEach(g=>g.items.forEach(i=>WHO[i[1]]=g.who));
-WHO['Конфиденциально']='Уполномоченное лицо (ограниченный доступ)';WHO['Не знаю, куда отнести']='Координатор платформы — распределит сам';
 const HDR=['Тип обращения','Тема обращения','Опишите ситуацию','Проверьте и отправьте'];
-let step=0, A={type:null,cat:null,descr:'',place:'Вахта №2',photos:0,conf:false};
+let step=0, A={type:null,cat:null,descr:'',place:'Вахта №2',photos:0};
 
 let H=[
  {id:'TRT-002398',cat:'Льготы и гарантии',type:'Жалоба',date:'27.10.2026',st:3,push:true,descr:'Не выплачена материальная помощь к отпуску.',dec:'Материальная помощь начислена, выплата 05.11 вместе с авансом.',who:'HR-департамент КРЖ',
   times:['27.10 18:11','27.10 18:30','28.10 09:10','30.10 09:05']},
  {id:'TRT-002415',cat:'Проживание',type:'Жалоба',date:'29.10.2026',st:2,descr:'В общежитии 3 нет горячей воды третьи сутки.',dec:null,who:'Vertex Holding',co:'HR-департамент КРЖ',due:'03.11.2026',times:['29.10 21:10','30.10 08:05','30.10 08:30']},
- {id:'TRT-K-0011',cat:'Конфиденциально',type:'Жалоба',date:'27.10.2026',st:2,conf:true,descr:'После жалобы на график меня перевели на худшую смену.',dec:null,who:'Уполномоченное лицо',due:'06.11.2026',times:['27.10 22:15','28.10 09:00','28.10 11:00']},
+ {id:'TRT-002396',cat:'Оплата, графики, отпуска',type:'Жалоба',date:'27.10.2026',st:2,conf:true,descr:'После жалобы на график меня перевели на худшую смену.',dec:null,who:'Модератор',due:'06.11.2026',times:['27.10 22:15','28.10 09:00','28.10 11:00']},
  {id:'TRT-002409',due:'31.10.2026',cat:'Стирка и бытовые услуги',type:'Жалоба',date:'29.10.2026',st:2,descr:'Спецодежду вернули с пятнами мазута.',dec:null,who:'Vertex Holding',times:['29.10 14:03','29.10 14:20','29.10 16:40']},
  {id:'TRT-002401',cat:'Оплата, графики, отпуска',type:'Жалоба',date:'28.10.2026',st:0,descr:'В расчётном листе не учтены 2 ночные смены.',dec:null,who:null,times:['28.10 09:30']},
  {id:'TRT-002390',cat:'Культура, спорт, досуг',type:'Предложение',date:'26.10.2026',st:4,rating:5,descr:'Организовать поездку в театр для межвахтового отдыха.',dec:'Поездка в театр 22.11, запись в профкоме.',who:'Профсоюз',times:['26.10 12:00','26.10 12:40','27.10 10:00','29.10 15:30','29.10 19:02']}
@@ -172,19 +164,17 @@ function renderNew(){
   } else if(step===2){
     h=`<div class="field"><label>Описание</label><textarea rows="5" placeholder="Что случилось, когда, где…" oninput="A.descr=this.value;upd()">${A.descr}</textarea></div>
       <div class="field"><label>Место</label><select onchange="A.place=this.value">${['Вахта №1','Вахта №2','Общежитие 1','Общежитие 3','Столовая','Рудник','ОФ','Транспорт'].map(p=>`<option ${A.place===p?'selected':''}>${p}</option>`).join('')}</select></div>
-      <div class="field"><label>Фото (необязательно)</label><div class="addph">${Array.from({length:A.photos},(_,i)=>`<div class="ph f">фото ${i+1}</div>`).join('')}${A.photos<3?`<div class="ph" onclick="A.photos++;renderNew()">＋</div>`:''}</div></div>
-      <div class="chk"><input type="checkbox" ${A.conf?'checked':''} onchange="A.conf=this.checked"><div><b>Конфиденциальное обращение</b><small>Жалоба на руководителя, конфликт, давление, притеснение, защита от преследования. Рассматривает только уполномоченное лицо — модератор и исполнители не увидят ваши данные.</small></div></div>`;
+      <div class="field"><label>Фото (необязательно)</label><div class="addph">${Array.from({length:A.photos},(_,i)=>`<div class="ph f">фото ${i+1}</div>`).join('')}${A.photos<3?`<div class="ph" onclick="A.photos++;renderNew()">＋</div>`:''}</div></div>`;
   } else if(step===3){
     h=`<div class="info">
       <div class="row"><div class="cap">Текст обращения:</div><div class="val txt">${A.descr||'—'}</div></div>
       <div class="row"><div class="cap">Тип обращения:</div><div class="val">${A.type}</div></div>
       <div class="row"><div class="cap">Тема:</div><div class="val">${A.cat}</div></div>
       <div class="row"><div class="cap">Место / фото:</div><div class="val">${A.place} · фото: ${A.photos}</div></div>
-      ${A.conf?'<div class="row"><div class="val" style="color:#c62828">Конфиденциально</div></div>':''}
       </div>
-      ${A.conf?'<div class="route" style="background:#FFEBEE;color:#8e1c1c">Конфиденциальное обращение получит только уполномоченное лицо. Ваши ФИО и табельный номер не будут переданы исполнителям.</div>':'<div class="route">Обращение получит модератор и направит ответственному исполнителю: Vertex Holding, Профсоюз или HR-департамент КРЖ. Если вопрос касается нескольких — назначит соисполнителей. Статусы и срок исполнения придут уведомлениями.</div>'}`;
+      <div class="route">Обращение получит модератор и направит ответственному исполнителю: Vertex Holding, Профсоюз или HR-департамент КРЖ. Если вопрос касается нескольких — назначит соисполнителей. Статусы и срок исполнения придут уведомлениями.</div>`;
   } else {
-    h=`<div class="done"><div class="big"><svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="#7ec172" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></div><h3>Обращение отправлено</h3><p>№ TRT-002418<br>${A.conf?'Передано уполномоченному лицу (конфиденциально)':'Передано модератору'}</p><p>Мы пришлём уведомление, когда статус изменится.</p></div>`;
+    h=`<div class="done"><div class="big"><svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="#7ec172" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></div><h3>Обращение отправлено</h3><p>№ TRT-002418<br>Передано модератору</p><p>Мы пришлём уведомление, когда статус изменится.</p></div>`;
   }
   $('stepBody').innerHTML=h;upd();
 }
@@ -195,11 +185,11 @@ function upd(){
   $('bBack').textContent=step===0||step>3?'Отмена':'Назад';
 }
 function next(){
-  if(step===3){H.unshift({id:'TRT-002418',cat:A.cat,type:A.type,date:'30.10.2026',st:0,descr:A.descr,dec:null,who:null,conf:A.conf,times:['30.10 09:41'],push:false});openId='TRT-002418'}
-  if(step>3){step=0;A={type:null,cat:null,descr:'',place:'Вахта №2',photos:0,conf:false};tab(1);return}
+  if(step===3){H.unshift({id:'TRT-002418',cat:A.cat,type:A.type,date:'30.10.2026',st:0,descr:A.descr,dec:null,who:null,times:['30.10 09:41'],push:false});openId='TRT-002418'}
+  if(step>3){step=0;A={type:null,cat:null,descr:'',place:'Вахта №2',photos:0};tab(1);return}
   step++;renderNew();
 }
-function back(){if(step===0||step>3){step=0;A={type:null,cat:null,descr:'',place:'Вахта №2',photos:0,conf:false};toast('Отменено')}else step--;renderNew()}
+function back(){if(step===0||step>3){step=0;A={type:null,cat:null,descr:'',place:'Вахта №2',photos:0};toast('Отменено')}else step--;renderNew()}
 
 function badge(e){
   return[`<span class="badge b-new">Получено</span>`,`<span class="badge b-new">Направлено</span>`,`<span class="badge b-work">В работе</span>`,`<span class="badge b-rate">Оцените</span>`,`<span class="badge b-done">Оценено</span>`][e.st];
@@ -213,8 +203,8 @@ function renderHist(){
       ${badge(e)} ${e.push?'<span class="bell"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#d95858" stroke-width="2"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></span>':''}
     </div>
     ${openId===e.id?`<div class="det">
-      ${e.conf?'<div class="route" style="background:#FFEBEE;color:#8e1c1c;margin:8px 0 0">Конфиденциально — ваши данные видит только уполномоченное лицо</div>':''}
-      <div class="cap">Исполнитель</div><div>${e.who||(e.conf?'Уполномоченное лицо':'<span style="color:#aaa">Модератор рассматривает обращение</span>')}${e.co?'<br><span style="color:#888">Соисполнитель: '+e.co+'</span>':''}</div>
+      
+      <div class="cap">Исполнитель</div><div>${e.who||(e.conf?'Модератор':'<span style="color:#aaa">Модератор рассматривает обращение</span>')}${e.co?'<br><span style="color:#888">Соисполнитель: '+e.co+'</span>':''}</div>
       ${e.due&&e.st<3?'<div class="cap">Срок исполнения</div><div>до '+e.due+'</div>':''}
       <div class="cap">Статус</div>
       <ul class="trk">${STEPS.map((s,i)=>{return `<li class="${i<e.st||e.st===4?'d':i===e.st?'c':''}">${i===1&&e.who?s+': '+e.who:s}${e.times[i]?`<small>${e.times[i]}</small>`:''}</li>`}).join('')}</ul>
