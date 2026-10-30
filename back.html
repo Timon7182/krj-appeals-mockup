@@ -43,6 +43,17 @@
   .kpi span{font-size:11.5px;color:#777}
   .kpi.red b{color:#c62828}.kpi.blue b{color:#197de1}.kpi.green b{color:#2e7d32}.kpi.orange b{color:#ef7f1a}
   .bp{display:flex;gap:6px;margin-bottom:6px}
+  .parts{border:1px solid #e0e0e0;border-radius:6px;background:#fafafa;padding:10px 12px;margin-bottom:12px}
+  .parts h3{margin:0 0 8px;font-size:13px;font-weight:600}
+  .parts .wrap{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .pc{background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:8px 12px;cursor:pointer}
+  .pc:hover,.pc.on{border-color:#197de1}
+  .pc .nm{font-weight:600;font-size:12.5px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .pc .nm i{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .pc .nums{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .pc .nums b{display:block;font-size:17px;font-weight:600}
+  .pc .nums span{font-size:11px;color:#888}
+  .pc .nums .red b{color:#c62828}
   table.grid{width:100%;border-collapse:collapse;border:1px solid #d6d6d6}
   .grid th{background:#f4f4f4;text-align:left;font-weight:600;padding:7px 8px;border-bottom:1px solid #d6d6d6;border-right:1px solid #e4e4e4;white-space:nowrap;font-size:12.5px}
   .grid td{padding:6px 8px;border-bottom:1px solid #ececec;border-right:1px solid #f0f0f0;white-space:nowrap}
@@ -122,7 +133,7 @@
     <label>Войти как (для демонстрации)</label>
     <select id="role" onchange="setRole(this.value)">
       <option value="mod">Модератор — Ахметова Г.</option>
-      <option value="vertex">Исполнитель — Vertex-Holding</option>
+      <option value="vertex">Исполнитель — Vertex Holding</option>
       <option value="union">Исполнитель — Профсоюз</option>
       <option value="hr">Исполнитель — HR-департамент КРЖ</option>
     </select>
@@ -149,6 +160,7 @@
   <div class="ws" id="browse">
     <h1 id="brTitle"></h1>
     <div class="kpis" id="kpis"></div>
+    <div class="parts" id="parts"></div>
     <div class="filter">
       <label>Статус<select id="fStatus" onchange="renderGrid()"><option value="">Все</option></select></label>
       <label id="fExecWrap">Исполнитель<select id="fExec" onchange="renderGrid()"><option value="">Все</option><option value="none">Не назначен</option></select></label>
@@ -220,9 +232,9 @@
 
 <script>
 const EX = {
-  vertex:{name:'Vertex-Holding',cls:'p-vertex',d:'Питание, проживание, уборка, стирка, транспорт'},
-  union:{name:'Профсоюз',cls:'p-union',d:'Защита прав, культура, спорт, досуг'},
-  hr:{name:'HR-департамент КРЖ',cls:'p-hr',d:'Оплата, графики, отпуска, льготы, кадры'}
+  vertex:{name:'Vertex Holding',dot:'#ef7f1a',cls:'p-vertex',d:'Питание, проживание, уборка, стирка, транспорт'},
+  union:{name:'Профсоюз',dot:'#2e9d5b',cls:'p-union',d:'Защита прав, культура, спорт, досуг'},
+  hr:{name:'HR-департамент КРЖ',dot:'#1f3a6e',cls:'p-hr',d:'Оплата, графики, отпуска, льготы, кадры'}
 };
 const ST = {
   new:['Новое','s-new'], sent:['Направлено исполнителю','s-sent'], work:['В работе','s-work'],
@@ -242,11 +254,11 @@ let D = [
   log:[['app','30.10 06:15','Заявитель','Обращение подано через мобильное приложение']]},
  {id:'TRT-002409',date:'29.10.2026 14:03',type:'Жалоба',topic:'Уборка и стирка',author:'Касымов Д. А.',ex:'vertex',status:'work',due:'05.11.2026',
   descr:'Спецодежду вернули из стирки с пятнами мазута, второй раз подряд.',
-  log:[['app','29.10 14:03','Заявитель','Обращение подано'],['mod','29.10 14:20',MOD,'Направлено: Vertex-Holding, срок 05.11'],['ntf','29.10 14:20','Уведомление заявителю','Статус: Направлено исполнителю'],
-       ['ex','29.10 16:40','Vertex-Holding','Принято в работу'],['ntf','29.10 16:40','Уведомление заявителю','Статус: В работе']]},
+  log:[['app','29.10 14:03','Заявитель','Обращение подано'],['mod','29.10 14:20',MOD,'Направлено: Vertex Holding, срок 05.11'],['ntf','29.10 14:20','Уведомление заявителю','Статус: Направлено исполнителю'],
+       ['ex','29.10 16:40','Vertex Holding','Принято в работу'],['ntf','29.10 16:40','Уведомление заявителю','Статус: В работе']]},
  {id:'TRT-002404',date:'28.10.2026 11:20',type:'Жалоба',topic:'Транспорт',author:'Ержанов М. С.',ex:'vertex',status:'sent',due:'29.10.2026',over:true,
   descr:'Автобус на смену 28.10 опоздал на 50 минут.',
-  log:[['app','28.10 11:20','Заявитель','Обращение подано'],['mod','28.10 11:45',MOD,'Направлено: Vertex-Holding, срок 29.10'],['ntf','28.10 11:45','Уведомление заявителю','Статус: Направлено исполнителю']]},
+  log:[['app','28.10 11:20','Заявитель','Обращение подано'],['mod','28.10 11:45',MOD,'Направлено: Vertex Holding, срок 29.10'],['ntf','28.10 11:45','Уведомление заявителю','Статус: Направлено исполнителю']]},
  {id:'TRT-002401',date:'28.10.2026 09:30',type:'Жалоба',topic:'Оплата и графики',author:'Абдрахманова А. Т.',ex:null,status:'returned',due:null,retFrom:'union',
   retComment:'Вопрос начисления за ночные смены — не компетенция профсоюза. Просим направить в HR-департамент.',
   descr:'В расчётном листе за сентябрь не учтены 2 ночные смены.',
@@ -261,8 +273,8 @@ let D = [
        ['ex','29.10 15:30','Профсоюз','Закрыто. Решение: Поездка в театр 22.11, запись в профкоме.'],['app','29.10 19:02','Заявитель','Оценка исполнителю: 5 из 5 — «Спасибо, быстро организовали!»']]},
  {id:'TRT-002377',date:'24.10.2026 08:20',type:'Жалоба',topic:'Проживание',author:'Жумабеков К. О.',ex:'vertex',status:'rated',due:'29.10.2026',rating:2,rComment:'Отопление починили только через 4 дня.',
   descr:'Не работает отопление в комнате 214.',decision:'Заменён радиатор в комнате 214.',
-  log:[['app','24.10 08:20','Заявитель','Обращение подано'],['mod','24.10 08:40',MOD,'Направлено: Vertex-Holding'],['ex','24.10 10:00','Vertex-Holding','Принято в работу'],
-       ['ex','28.10 17:00','Vertex-Holding','Закрыто. Решение: Заменён радиатор в комнате 214.'],['app','28.10 21:10','Заявитель','Оценка исполнителю: 2 из 5 — «Отопление починили только через 4 дня.»']]},
+  log:[['app','24.10 08:20','Заявитель','Обращение подано'],['mod','24.10 08:40',MOD,'Направлено: Vertex Holding'],['ex','24.10 10:00','Vertex Holding','Принято в работу'],
+       ['ex','28.10 17:00','Vertex Holding','Закрыто. Решение: Заменён радиатор в комнате 214.'],['app','28.10 21:10','Заявитель','Оценка исполнителю: 2 из 5 — «Отопление починили только через 4 дня.»']]},
  {id:'TRT-002365',date:'22.10.2026 19:45',type:'Предложение',topic:'Другое',author:'Ли В. А.',ex:null,status:'cancel',due:null,
   descr:'Тестовое обращение.',log:[['app','22.10 19:45','Заявитель','Обращение подано'],['mod','23.10 09:00',MOD,'Отменено: дубль / тестовое обращение']]}
 ];
@@ -296,6 +308,14 @@ function renderGrid(){
   const V=visible(), c=k=>V.filter(KF[k]).length;
   $('brTitle').textContent=role==='mod'?'Обращения — все (модератор)':'Обращения — направленные: '+EX[role].name;
   $('fExecWrap').classList.toggle('hidden',role!=='mod');
+  $('parts').classList.toggle('hidden',role!=='mod');
+  if(role==='mod'){
+    $('parts').innerHTML='<h3>Исполнение по участникам</h3><div class="wrap">'+Object.entries(EX).map(([k,e])=>{
+      const R=D.filter(r=>r.ex===k), w=R.filter(r=>['sent','work'].includes(r.status)).length, o=R.filter(r=>r.over).length,
+            d=R.filter(r=>['closed','rated'].includes(r.status)).length, rt=R.filter(r=>r.rating), avg=rt.length?(rt.reduce((a,r)=>a+r.rating,0)/rt.length).toFixed(1):'—';
+      return `<div class="pc ${$('fExec').value===k?'on':''}" onclick="$('fExec').value=$('fExec').value==='${k}'?'':'${k}';renderGrid()"><div class="nm"><i style="background:${e.dot}"></i>${e.name}</div>
+        <div class="nums"><div><b>${w}</b><span>в работе</span></div><div class="${o?'red':''}"><b>${o}</b><span>просрочено</span></div><div><b>${d}</b><span>решено</span></div><div><b>${avg}</b><span>ср. оценка</span></div></div></div>`}).join('')+'</div>';
+  }
   $('kpis').innerHTML=role==='mod'
     ? kpi('blue',c('new'),'Новые — нужно распределить','new')+kpi('red',c('returned'),'Возвращены исполнителями','returned')+kpi('orange',c('atex'),'У исполнителей, не обработаны','atex')+kpi('red',c('over'),'Просрочены','over')+kpi('green',c('done'),'Обработаны (закрыты)','done')
     : kpi('blue',c('sent'),'Новые, ждут принятия','sent')+kpi('orange',c('work'),'В работе','work')+kpi('red',c('over'),'Просрочены','over')+kpi('green',c('done'),'Закрыты мной','done');
