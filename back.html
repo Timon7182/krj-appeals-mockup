@@ -3,50 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KRJ — Обращения (макет «Единое окно»)</title>
+<title>KRJ — Предложения по улучшению (Обращения), макет</title>
 <style>
   *{box-sizing:border-box}
   body{margin:0;font-family:"Segoe UI",Roboto,Arial,sans-serif;font-size:13px;color:#2b2b2b;background:#fafafa;height:100vh;display:flex;overflow:hidden}
-  /* side menu — как в KRJ (cuba sidemenu, #707070) */
   .side{width:230px;background:#707070;color:#fff;display:flex;flex-direction:column;flex-shrink:0}
-  .side .logo{padding:16px 18px;font-weight:700;font-size:17px;letter-spacing:.5px;border-bottom:1px solid rgba(255,255,255,.15)}
+  .side .logo{padding:16px 18px;font-weight:700;font-size:17px;border-bottom:1px solid rgba(255,255,255,.15)}
   .side .logo small{display:block;font-weight:400;font-size:11px;opacity:.8}
-  .side .user{padding:10px 18px;font-size:12px;opacity:.9;border-bottom:1px solid rgba(255,255,255,.15)}
+  .side .role{padding:10px 18px;border-bottom:1px solid rgba(255,255,255,.15)}
+  .side .role label{font-size:11px;opacity:.8;display:block;margin-bottom:4px}
+  .side .role select{width:100%;height:30px;border-radius:3px;border:none;font:inherit}
   .side .menu{flex:1;overflow:auto;padding:6px 0}
-  .side .item{padding:9px 18px;cursor:default;opacity:.9}
+  .side .item{padding:9px 18px;opacity:.9}
   .side .item.grp{font-weight:600;opacity:1}
   .side .item.sub{padding-left:32px}
   .side .item.active{background:rgba(255,255,255,.18);border-left:3px solid #fff;padding-left:29px}
-  .side .item:hover{background:rgba(255,255,255,.1)}
   .main{flex:1;display:flex;flex-direction:column;min-width:0}
   .tabs{display:flex;background:#f0f0f0;border-bottom:1px solid #d6d6d6;padding:0 8px;flex-shrink:0}
   .tab{padding:9px 16px;border:1px solid transparent;border-bottom:none;margin-top:4px;cursor:pointer;color:#555}
   .tab.on{background:#fff;border-color:#d6d6d6;color:#222;font-weight:600;margin-bottom:-1px}
-  .tab .x{margin-left:8px;color:#999}
+  .tab .x{margin-left:10px;color:#999}
   .ws{flex:1;overflow:auto;padding:14px 18px;background:#fff}
   .hidden{display:none!important}
   h1{font-size:18px;font-weight:400;margin:0 0 12px}
-  /* buttons */
-  .btn{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 13px;border:1px solid #c5c5c5;border-radius:3px;background:linear-gradient(#fff,#f1f1f1);color:#333;font-size:13px;cursor:pointer;white-space:nowrap}
+  .btn{display:inline-flex;align-items:center;height:30px;padding:0 13px;border:1px solid #c5c5c5;border-radius:3px;background:linear-gradient(#fff,#f1f1f1);color:#333;font:inherit;cursor:pointer;white-space:nowrap}
   .btn:hover{background:#f6f6f6}
   .btn.primary{background:#197de1;border-color:#1362b1;color:#fff}
-  .btn.primary:hover{background:#1a72cc}
   .btn.ok{background:#3ea33e;border-color:#2e842e;color:#fff}
+  .btn.warn{background:#ef7f1a;border-color:#c96a12;color:#fff}
   .btn.danger{color:#c62828}
-  .btn.send{background:#ef7f1a;border-color:#c96a12;color:#fff;font-weight:600}
-  .btn:disabled{opacity:.45;cursor:not-allowed}
-  /* filter */
   .filter{border:1px solid #dcdcdc;border-radius:3px;padding:10px 12px;margin-bottom:10px;background:#fcfcfc;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
   .filter label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:#666}
   select,input[type=text],textarea{font:inherit;border:1px solid #c5c5c5;border-radius:3px;padding:5px 7px;background:#fff;height:30px}
   textarea{height:auto;resize:vertical;width:100%}
-  /* kpi */
   .kpis{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
-  .kpi{border:1px solid #e0e0e0;border-radius:4px;padding:8px 14px;min-width:140px;background:#fff}
+  .kpi{border:1px solid #e0e0e0;border-radius:4px;padding:8px 14px;min-width:150px;background:#fff;cursor:pointer}
+  .kpi:hover{border-color:#197de1}
   .kpi b{display:block;font-size:20px;font-weight:600}
-  .kpi span{font-size:11px;color:#777}
+  .kpi span{font-size:11.5px;color:#777}
   .kpi.red b{color:#c62828}.kpi.blue b{color:#197de1}.kpi.green b{color:#2e7d32}.kpi.orange b{color:#ef7f1a}
-  /* table */
   .bp{display:flex;gap:6px;margin-bottom:6px}
   table.grid{width:100%;border-collapse:collapse;border:1px solid #d6d6d6}
   .grid th{background:#f4f4f4;text-align:left;font-weight:600;padding:7px 8px;border-bottom:1px solid #d6d6d6;border-right:1px solid #e4e4e4;white-space:nowrap;font-size:12.5px}
@@ -57,376 +52,347 @@
   .grid tr.sel td{background:#cfe4fa!important}
   .grid tr.overdue td:first-child{border-left:3px solid #c62828}
   .rows{font-size:12px;color:#777;margin-top:6px}
-  /* status chips (цвета как в krj.scss) */
   .st{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11.5px;font-weight:600}
   .s-new{background:#E3F2FD;color:#1565c0}
-  .s-assigned{background:#EDE7F6;color:#5e35b1}
-  .s-sent{background:#FFF3E0;color:#e65100}
+  .s-sent{background:#EDE7F6;color:#5e35b1}
   .s-work{background:#FFFDE7;color:#8d6e00;border:1px solid #f3e08a}
-  .s-result{background:#E0F7FA;color:#00838f}
-  .s-checked{background:#E8F5E9;color:#2e7d32}
+  .s-returned{background:#FFEBEE;color:#c62828}
+  .s-closed{background:#E8F5E9;color:#2e7d32}
   .s-rated{background:#C8E6C9;color:#1b5e20}
-  .s-reopen{background:#FFEBEE;color:#c62828}
   .s-cancel{background:#eeeeee;color:#757575}
   .party{font-size:11.5px;padding:1px 7px;border-radius:3px;border:1px solid}
-  .p-eso{color:#00695c;border-color:#80cbc4;background:#e0f2f1}
+  .p-vertex{color:#00695c;border-color:#80cbc4;background:#e0f2f1}
   .p-union{color:#6a1b9a;border-color:#ce93d8;background:#f3e5f5}
-  .p-emp{color:#1565c0;border-color:#90caf9;background:#e3f2fd}
+  .p-hr{color:#1565c0;border-color:#90caf9;background:#e3f2fd}
   .stars{color:#f5a623;letter-spacing:1px}
   .muted{color:#888}
-  /* editor */
-  .ed{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px}
+  .ed{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px}
   .box{border:1px solid #dcdcdc;border-radius:3px;padding:12px 14px;margin-bottom:12px;background:#fff}
-  .box h3{margin:0 0 10px;font-size:13.5px;font-weight:600;color:#444;display:flex;justify-content:space-between;align-items:center}
+  .box h3{margin:0 0 10px;font-size:13.5px;font-weight:600;color:#444}
   .form{display:grid;grid-template-columns:150px 1fr 150px 1fr;gap:7px 10px;align-items:center}
   .form .l{color:#666;text-align:right}
   .form .v{border:1px solid #d9d9d9;border-radius:3px;padding:5px 7px;background:#f7f7f7;min-height:28px}
-  .form .v.edit{background:#fff}
-  .req:after{content:" *";color:#c62828}
   .descr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .descr .v{border:1px solid #d9d9d9;border-radius:3px;padding:8px;min-height:80px;background:#f7f7f7;line-height:1.45}
-  .photos{display:flex;gap:6px;margin-top:6px}
-  .ph{width:62px;height:46px;border-radius:3px;background:repeating-linear-gradient(45deg,#ddd,#ddd 6px,#eee 6px,#eee 12px);display:flex;align-items:center;justify-content:center;font-size:10px;color:#777}
-  .actions{display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid #e4e4e4;padding-top:10px;margin-top:4px}
+  .descr .v{border:1px solid #d9d9d9;border-radius:3px;padding:8px;min-height:90px;background:#f7f7f7;line-height:1.45}
+  .alert{border-radius:3px;padding:10px 12px;margin-bottom:12px;line-height:1.45}
+  .alert.red{background:#FFEBEE;border:1px solid #ffcdd2;color:#8e1c1c}
+  .alert.blue{background:#E3F2FD;border:1px solid #bbdefb;color:#0d47a1}
+  .alert.green{background:#E8F5E9;border:1px solid #c8e6c9;color:#1b5e20}
+  .actions{display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid #e4e4e4;padding-top:10px}
   .actions .sp{flex:1}
-  /* stepper */
   .path{display:flex;margin:4px 0 14px}
   .stp{flex:1;text-align:center;position:relative;font-size:11.5px;color:#999}
-  .stp:before{content:"";position:absolute;top:11px;left:-50%;width:100%;height:2px;background:#ddd;z-index:0}
+  .stp:before{content:"";position:absolute;top:11px;left:-50%;width:100%;height:2px;background:#ddd}
   .stp:first-child:before{display:none}
   .stp i{display:inline-flex;width:24px;height:24px;border-radius:50%;background:#e0e0e0;color:#fff;align-items:center;justify-content:center;font-style:normal;font-weight:700;position:relative;z-index:1;margin-bottom:4px}
   .stp.done{color:#2e7d32}.stp.done i{background:#43a047}.stp.done:before{background:#43a047}
   .stp.cur{color:#197de1;font-weight:600}.stp.cur i{background:#197de1;box-shadow:0 0 0 4px #d6e8fb}.stp.cur:before{background:#43a047}
-  /* integration panel */
-  .ext{border:1px solid #f0c48f;background:#fffaf3}
-  .ext h3{color:#b35c00}
-  .ticket{display:grid;grid-template-columns:120px 1fr;gap:5px 8px;font-size:12.5px}
-  .ticket .l{color:#888}
+  .stp.bad{color:#c62828;font-weight:600}.stp.bad i{background:#c62828}
   .log{list-style:none;margin:0;padding:0}
   .log li{position:relative;padding:0 0 12px 22px;font-size:12.5px;line-height:1.4}
-  .log li:before{content:"";position:absolute;left:5px;top:5px;width:9px;height:9px;border-radius:50%;background:#bbb}
+  .log li:before{content:"";position:absolute;left:5px;top:5px;width:9px;height:9px;border-radius:50%;background:#197de1}
   .log li:after{content:"";position:absolute;left:9px;top:16px;bottom:0;width:1px;background:#ddd}
   .log li:last-child:after{display:none}
-  .log li.in:before{background:#00838f}.log li.out:before{background:#ef7f1a}.log li.sys:before{background:#197de1}.log li.emp:before{background:#f5a623}
+  .log li.ex:before{background:#5e35b1}.log li.ret:before{background:#c62828}.log li.app:before{background:#f5a623}.log li.ntf:before{background:#bbb}
+  .log li.ntf{color:#888}
   .log .t{color:#999;font-size:11.5px}
-  .log .dir{font-size:10.5px;font-weight:700;padding:0 5px;border-radius:2px;margin-right:4px}
-  .dir.o{background:#ffe0b2;color:#b35c00}.dir.i{background:#b2ebf2;color:#006064}.dir.s{background:#d6e8fb;color:#0d47a1}.dir.e{background:#fff3cd;color:#8a6100}
-  .sla{display:flex;align-items:center;gap:8px;font-size:12px}
-  .bar{flex:1;height:6px;background:#eee;border-radius:3px;overflow:hidden}
-  .bar div{height:100%;background:#43a047}
-  .bar.warn div{background:#ef7f1a}.bar.bad div{background:#c62828}
-  .simu{border:1px dashed #b0bec5;background:#f5f8fa;border-radius:3px;padding:10px 12px;font-size:12px}
-  .simu b{display:block;margin-bottom:6px;color:#546e7a}
-  .simu .btn{height:26px;font-size:12px;margin:0 4px 4px 0}
-  /* dialog */
+  .log .who{font-weight:600}
   .ovl{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:10}
-  .dlg{background:#fff;width:560px;border-radius:4px;box-shadow:0 10px 40px rgba(0,0,0,.3);overflow:hidden}
+  .dlg{background:#fff;width:540px;border-radius:4px;box-shadow:0 10px 40px rgba(0,0,0,.3);overflow:hidden}
   .dlg .hd{background:#f4f4f4;border-bottom:1px solid #ddd;padding:10px 14px;font-weight:600;display:flex;justify-content:space-between}
   .dlg .bd{padding:14px;display:flex;flex-direction:column;gap:10px}
   .dlg .ft{padding:10px 14px;border-top:1px solid #eee;display:flex;justify-content:flex-end;gap:6px}
-  .sys{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .sys label{border:1px solid #d6d6d6;border-radius:4px;padding:8px 10px;cursor:pointer;display:flex;gap:8px;align-items:flex-start}
-  .sys label:hover{background:#f6faff}
-  .sys input{margin-top:2px}
-  .sys small{display:block;color:#888;font-size:11px}
-  .sys label.rec{border-color:#43a047;background:#f1f8f1}
-  .hint{font-size:11.5px;color:#2e7d32}
-  .toast{position:fixed;right:20px;bottom:20px;background:#323232;color:#fff;padding:10px 16px;border-radius:3px;font-size:13px;z-index:20;opacity:0;transition:opacity .3s}
+  .dlg label{display:flex;flex-direction:column;gap:4px;color:#555}
+  .opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .opts label{border:1px solid #d6d6d6;border-radius:4px;padding:10px;cursor:pointer;flex-direction:row;gap:8px;align-items:flex-start;color:#2b2b2b}
+  .opts label:hover{background:#f6faff}
+  .opts small{display:block;color:#888;font-size:11px;margin-top:2px}
+  .opts label.dis{opacity:.45;cursor:not-allowed}
+  .err{color:#c62828;font-size:12px}
+  .toast{position:fixed;right:20px;bottom:20px;background:#323232;color:#fff;padding:10px 16px;border-radius:3px;z-index:20;opacity:0;transition:opacity .3s}
   .toast.on{opacity:1}
-  .note{font-size:11.5px;color:#999;margin-top:14px}
+  .note{font-size:11.5px;color:#999;margin-top:14px;line-height:1.5}
 </style>
 </head>
 <body>
 
 <div class="side">
   <div class="logo">KRJ<small>Каражыра · Личный кабинет</small></div>
-  <div class="user">Ахметова Г. — Диспетчер обращений</div>
+  <div class="role">
+    <label>Войти как (для демонстрации)</label>
+    <select id="role" onchange="setRole(this.value)">
+      <option value="mod">Модератор — Ахметова Г.</option>
+      <option value="vertex">Исполнитель — Vertex-Holding</option>
+      <option value="union">Исполнитель — Профсоюз</option>
+      <option value="hr">Исполнитель — HR-департамент КРЖ</option>
+    </select>
+  </div>
   <div class="menu">
     <div class="item grp">Сотрудники</div>
     <div class="item grp">Питание</div>
     <div class="item grp">Проживание</div>
-    <div class="item grp">СИЗ</div>
-    <div class="item grp">Обращения</div>
+    <div class="item grp">Предложения по улучшению</div>
     <div class="item sub active">Обращения</div>
     <div class="item sub">Темы обращений</div>
-    <div class="item sub">Маршруты и внешние системы</div>
-    <div class="item sub">Аналитика обращений</div>
+    <div class="item sub">Исполнители</div>
     <div class="item grp">Новости</div>
     <div class="item grp">Справочники</div>
-    <div class="item grp">Администрирование</div>
   </div>
 </div>
 
 <div class="main">
   <div class="tabs">
     <div class="tab on" id="tabBrowse" onclick="showBrowse()">Обращения</div>
-    <div class="tab hidden" id="tabEdit" onclick="openEdit(curId)"><span id="tabEditTitle">Обращение</span><span class="x" onclick="event.stopPropagation();closeEdit()">✕</span></div>
+    <div class="tab hidden" id="tabEdit"><span id="tabEditTitle"></span><span class="x" onclick="closeEdit()">✕</span></div>
   </div>
 
-  <!-- ============ BROWSE ============ -->
   <div class="ws" id="browse">
-    <h1>Обращения</h1>
-    <div class="kpis">
-      <div class="kpi blue"><b id="kNew">0</b><span>Новые / к распределению</span></div>
-      <div class="kpi orange"><b id="kSent">0</b><span>Во внешних системах</span></div>
-      <div class="kpi"><b id="kWork">0</b><span>В работе</span></div>
-      <div class="kpi red"><b id="kOver">0</b><span>Просрочено по SLA</span></div>
-      <div class="kpi green"><b id="kRate">0</b><span>Средняя оценка работников</span></div>
-    </div>
+    <h1 id="brTitle"></h1>
+    <div class="kpis" id="kpis"></div>
     <div class="filter">
       <label>Статус<select id="fStatus" onchange="renderGrid()"><option value="">Все</option></select></label>
-      <label>Ответственная сторона<select id="fParty" onchange="renderGrid()"><option value="">Все</option><option>ЕСО Vertex</option><option>Профсоюз</option><option>Работодатель</option></select></label>
+      <label id="fExecWrap">Исполнитель<select id="fExec" onchange="renderGrid()"><option value="">Все</option><option value="none">Не назначен</option></select></label>
       <label>Тип<select id="fType" onchange="renderGrid()"><option value="">Все</option><option>Жалоба</option><option>Предложение</option></select></label>
-      <label>Поиск<input type="text" id="fText" placeholder="№, автор, текст" oninput="renderGrid()"></label>
-      <label><span>&nbsp;</span><span><input type="checkbox" id="fOver" onchange="renderGrid()"> только просроченные</span></label>
+      <label>Тема<select id="fTopic" onchange="renderGrid()"><option value="">Все</option></select></label>
+      <label>Поиск<input type="text" id="fText" placeholder="№, заявитель, текст" oninput="renderGrid()"></label>
     </div>
     <div class="bp">
-      <button class="btn primary">+ Создать</button>
-      <button class="btn" onclick="curId&&openEdit(curId)">Изменить</button>
+      <button class="btn" onclick="curId&&openEdit(curId)">Открыть</button>
       <button class="btn" onclick="toast('Выгрузка в Excel (макет)')">Excel</button>
     </div>
     <table class="grid">
-      <thead><tr>
-        <th>Номер</th><th>Дата регистрации</th><th>Тип</th><th>Категория</th><th>Автор</th><th>Площадка</th>
-        <th>Ответственная сторона</th><th>Внешняя система</th><th>Статус</th><th>Срок</th><th>Оценка</th>
-      </tr></thead>
+      <thead><tr><th>Номер</th><th>Дата</th><th>Тип</th><th>Тема</th><th>Заявитель</th><th>Исполнитель</th><th>Статус</th><th>Срок</th><th>Оценка</th></tr></thead>
       <tbody id="grid"></tbody>
     </table>
     <div class="rows" id="rows"></div>
-    <div class="note">Макет. Данные вымышленные. Строки с красной полосой — просрочен SLA. Двойной клик или «Изменить» открывает карточку обращения.</div>
+    <div class="note">Макет, данные вымышленные. Слева можно переключить роль: модератор видит все обращения, исполнитель — только направленные ему.
+      Красная полоса у строки — просрочен срок исполнения.</div>
   </div>
 
-  <!-- ============ EDIT ============ -->
   <div class="ws hidden" id="edit">
     <h1 id="edTitle"></h1>
     <div class="path" id="path"></div>
     <div class="ed">
       <div>
-        <div class="box">
-          <h3>Обращение</h3>
-          <div class="form" id="form"></div>
-        </div>
+        <div id="alerts"></div>
+        <div class="box"><h3>Обращение</h3><div class="form" id="form"></div></div>
         <div class="box">
           <div class="descr">
-            <div><div class="req" style="color:#666;margin-bottom:4px">Описание обращения</div><div class="v" id="eDescr"></div>
-              <div class="photos" id="ePhotos"></div></div>
-            <div><div style="color:#666;margin-bottom:4px">Решение</div><textarea id="eDecision" rows="5" placeholder="Заполняется по результату от исполнителя или вручную"></textarea></div>
+            <div><div style="color:#666;margin-bottom:4px">Описание обращения</div><div class="v" id="eDescr"></div></div>
+            <div><div style="color:#666;margin-bottom:4px">Решение исполнителя</div><div class="v" id="eDecision"></div></div>
           </div>
         </div>
         <div class="box" id="rateBox"></div>
         <div class="actions" id="actions"></div>
       </div>
-
       <div>
-        <div class="box ext" id="extBox"></div>
-        <div class="box">
-          <h3>История и интеграция</h3>
-          <ul class="log" id="log"></ul>
-        </div>
-        <div class="simu" id="simu"></div>
+        <div class="box"><h3>История обработки</h3><ul class="log" id="log"></ul></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- dialog: отправить заявку -->
+<!-- Модератор: направить исполнителю -->
 <div class="ovl hidden" id="dlgSend">
   <div class="dlg">
-    <div class="hd">Отправить заявку во внешнюю систему <span style="cursor:pointer" onclick="hide('dlgSend')">✕</span></div>
+    <div class="hd">Направить на исполнение <span style="cursor:pointer" onclick="hide('dlgSend')">✕</span></div>
     <div class="bd">
-      <div class="muted" id="dlgInfo"></div>
-      <div class="sys" id="sysList"></div>
-      <div class="hint" id="recHint"></div>
-      <label>Приоритет <select id="dPrio"><option>Обычный (SLA 48 ч)</option><option>Высокий (SLA 24 ч)</option><option>Критичный (SLA 4 ч)</option></select></label>
-      <label>Комментарий исполнителю<textarea id="dComment" rows="3" placeholder="Что нужно сделать / уточнения"></textarea></label>
-      <label><input type="checkbox" id="dPhotos" checked> Приложить фото работника</label>
-      <label><input type="checkbox" id="dAnon"> Скрыть ФИО автора (обезличить заявку)</label>
+      <div class="muted" id="sendInfo"></div>
+      <div class="opts" id="opts"></div>
+      <label>Срок исполнения<select id="sDue"><option value="2">2 рабочих дня</option><option value="5" selected>5 рабочих дней</option><option value="10">10 рабочих дней</option></select></label>
+      <label>Комментарий исполнителю<textarea id="sComment" rows="3" placeholder="Необязательно"></textarea></label>
+      <div class="err" id="sErr"></div>
     </div>
-    <div class="ft"><button class="btn send" onclick="doSend()">Отправить заявку</button><button class="btn" onclick="hide('dlgSend')">Отмена</button></div>
+    <div class="ft"><button class="btn primary" onclick="doSend()">Направить</button><button class="btn" onclick="hide('dlgSend')">Отмена</button></div>
   </div>
 </div>
 
-<!-- dialog: перенаправить / вернуть -->
-<div class="ovl hidden" id="dlgReturn">
-  <div class="dlg" style="width:460px">
-    <div class="hd">Вернуть на доработку исполнителю <span style="cursor:pointer" onclick="hide('dlgReturn')">✕</span></div>
-    <div class="bd"><label>Причина<textarea id="rReason" rows="3">Работник сообщает, что проблема не устранена.</textarea></label></div>
-    <div class="ft"><button class="btn primary" onclick="doReturn()">Отправить повторно</button><button class="btn" onclick="hide('dlgReturn')">Отмена</button></div>
+<!-- Исполнитель: закрыть / вернуть -->
+<div class="ovl hidden" id="dlgText">
+  <div class="dlg" style="width:480px">
+    <div class="hd"><span id="tTitle"></span><span style="cursor:pointer" onclick="hide('dlgText')">✕</span></div>
+    <div class="bd"><div class="muted" id="tHint"></div><label><span id="tLabel"></span><textarea id="tText" rows="4"></textarea></label><div class="err" id="tErr"></div></div>
+    <div class="ft"><button class="btn primary" id="tOk"></button><button class="btn" onclick="hide('dlgText')">Отмена</button></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const SYSTEMS = {
-  vertex:{name:'Vertex ЕСО — Service Desk', party:'ЕСО Vertex', cls:'p-eso', d:'Питание, проживание, уборка, стирка, транспорт', pfx:'VX-SD-'},
-  union:{name:'Профсоюз — реестр обращений', party:'Профсоюз', cls:'p-union', d:'Защита прав, культура, спорт, инициативы', pfx:'PROF-'},
-  hr:{name:'HR / 1С:ЗУП — кадровые запросы', party:'Работодатель', cls:'p-emp', d:'Оплата, графики, отпуска, льготы', pfx:'HR-'},
-  hse:{name:'Охрана труда (HSE) — предписания', party:'Работодатель', cls:'p-emp', d:'Охрана труда, СИЗ, безопасность', pfx:'HSE-'}
-};
-const CAT = {
-  'Питание':'vertex','Проживание':'vertex','Уборка':'vertex','Стирка и бытовые услуги':'vertex','Транспорт / доставка':'vertex',
-  'Оплата, графики, отпуска':'hr','Льготы и гарантии':'hr','Охрана труда и СИЗ':'hse',
-  'Культура, спорт, досуг':'union','Защита трудовых прав':'union','Конфиденциально':'hr'
+const EX = {
+  vertex:{name:'Vertex-Holding',cls:'p-vertex',d:'Питание, проживание, уборка, стирка, транспорт'},
+  union:{name:'Профсоюз',cls:'p-union',d:'Защита прав, культура, спорт, досуг'},
+  hr:{name:'HR-департамент КРЖ',cls:'p-hr',d:'Оплата, графики, отпуска, льготы, кадры'}
 };
 const ST = {
-  new:['Получено','s-new'], assigned:['Назначено','s-assigned'], sent:['Отправлено в систему','s-sent'],
-  work:['В работе у исполнителя','s-work'], result:['Результат получен','s-result'], checked:['Проверено','s-checked'],
-  rated:['Оценено','s-rated'], reopen:['Переоткрыто','s-reopen'], cancel:['Отменено','s-cancel']
+  new:['Новое','s-new'], sent:['Направлено исполнителю','s-sent'], work:['В работе','s-work'],
+  returned:['Возвращено модератору','s-returned'], closed:['Закрыто','s-closed'], rated:['Оценено','s-rated'], cancel:['Отменено','s-cancel']
 };
-const PATH = [['new','Получено'],['assigned','Назначено'],['sent','Отправлено'],['work','В работе'],['result','Результат'],['checked','Проверено'],['rated','Оценено']];
+const NOTIFY = {sent:'Направлено исполнителю',work:'В работе',closed:'Закрыто — оцените работу исполнителя',cancel:'Отменено'};
+const PATH = [['new','Получено'],['sent','Направлено'],['work','В работе'],['closed','Закрыто'],['rated','Оценено']];
+const TOPICS = ['Питание','Проживание','Уборка и стирка','Транспорт','Оплата и графики','Льготы и гарантии','Культура и спорт','Защита трудовых прав','Другое'];
+const MOD = 'Модератор Ахметова Г.';
 
 let D = [
- {id:'TRT-002417',date:'30.10.2026 07:42',type:'Жалоба',cat:'Питание',author:'Сейтказиев Н. Б.',site:'Вахта №2, столовая',sys:null,status:'new',due:'31.10 07:42',over:false,
-  descr:'На ужине 29.10 гарнир был холодный, мясное блюдо закончилось к 20:30. Вторая смена осталась без горячего.',photos:2,log:[['sys','30.10 07:42','Зарегистрировано из мобильного приложения']]},
- {id:'TRT-002416',date:'30.10.2026 06:15',type:'Жалоба',cat:'Проживание',author:'Омаров Е. К.',site:'Общежитие 3, к. 214',sys:null,status:'assigned',due:'01.11 06:15',over:false,
-  descr:'Не работает отопление в комнате 214, ночью +14°C.',photos:1,log:[['sys','30.10 06:15','Зарегистрировано из мобильного приложения'],['sys','30.10 06:16','Автомаршрут: категория «Проживание» → ЕСО Vertex. Назначен диспетчер Ахметова Г.']]},
- {id:'TRT-002409',date:'29.10.2026 14:03',type:'Жалоба',cat:'Стирка и бытовые услуги',author:'Касымов Д. А.',site:'Вахта №1, прачечная',sys:'vertex',ext:'VX-SD-58812',status:'work',due:'31.10 14:03',over:false,
-  descr:'Спецодежду вернули из стирки с пятнами мазута, второй раз подряд.',photos:3,
-  log:[['sys','29.10 14:03','Зарегистрировано'],['sys','29.10 14:04','Автомаршрут → ЕСО Vertex'],['out','29.10 14:20','Заявка отправлена в Vertex ЕСО — Service Desk'],['in','29.10 14:21','Vertex: заявка принята, № VX-SD-58812'],['in','29.10 16:40','Vertex: назначен исполнитель — начальник прачечной Ли В.']]},
- {id:'TRT-002401',date:'28.10.2026 09:30',type:'Жалоба',cat:'Транспорт / доставка',author:'Ержанов М. С.',site:'Маршрут Шемонаиха — рудник',sys:'vertex',ext:'VX-SD-58790',status:'sent',due:'29.10 09:30',over:true,
-  descr:'Автобус на смену 28.10 опоздал на 50 минут, люди ждали на морозе.',photos:0,
-  log:[['sys','28.10 09:30','Зарегистрировано'],['out','28.10 10:02','Заявка отправлена в Vertex ЕСО — Service Desk'],['in','28.10 10:03','Vertex: заявка принята, № VX-SD-58790'],['sys','29.10 09:30','Просрочен SLA: нет ответа от исполнителя']]},
- {id:'TRT-002398',date:'27.10.2026 18:11',type:'Жалоба',cat:'Оплата, графики, отпуска',author:'Абдрахманова А. Т.',site:'ОФ, участок флотации',sys:'hr',ext:'HR-11407',status:'result',due:'03.11 18:11',over:false,
-  descr:'В расчётном листе за сентябрь не учтены 2 ночные смены.',photos:1,decision:'Перерасчёт выполнен, доплата 2 ночных смен войдёт в аванс 15.11. — Отдел расчёта заработной платы',
-  log:[['sys','27.10 18:11','Зарегистрировано'],['out','27.10 18:30','Заявка отправлена в HR / 1С:ЗУП'],['in','27.10 18:31','HR: принято, № HR-11407'],['in','28.10 11:15','HR: в работе, ответственный — Нурланова С.'],['in','30.10 09:05','HR: результат — перерасчёт выполнен']]},
- {id:'TRT-002390',date:'26.10.2026 12:00',type:'Предложение',cat:'Культура, спорт, досуг',author:'Тлеубаев Р. Ж.',site:'Вахта №2',sys:'union',ext:'PROF-0331',status:'checked',due:'09.11 12:00',over:false,
-  descr:'Предлагаю организовать турнир по волейболу между сменами в спортзале вахты.',photos:0,decision:'Турнир включён в афишу на 15–16.11, запись открыта в приложении.',
-  log:[['sys','26.10 12:00','Зарегистрировано'],['out','26.10 12:40','Заявка отправлена в Профсоюз'],['in','27.10 10:00','Профсоюз: принято, № PROF-0331'],['in','29.10 15:30','Профсоюз: результат — турнир в афише'],['sys','29.10 16:00','Проверено диспетчером, ожидается оценка работника']]},
- {id:'TRT-002377',date:'24.10.2026 08:20',type:'Жалоба',cat:'Охрана труда и СИЗ',author:'Жумабеков К. О.',site:'Рудник, горный участок 2',sys:'hse',ext:'HSE-2290',status:'rated',due:'25.10 08:20',over:false,rating:5,
-  descr:'Выдали каски не по размеру, на смене 6 человек без нормальной каски.',photos:2,decision:'Выдано 6 касок нужного размера 24.10 в 15:00.',
-  log:[['sys','24.10 08:20','Зарегистрировано'],['out','24.10 08:25','Заявка отправлена в HSE'],['in','24.10 15:10','HSE: результат — каски выданы'],['sys','24.10 16:00','Проверено'],['emp','25.10 07:30','Работник оценил: ★★★★★ «Спасибо, быстро»']]},
- {id:'TRT-002365',date:'22.10.2026 19:45',type:'Жалоба',cat:'Уборка',author:'Мусина Л. Р.',site:'Общежитие 1, 2 этаж',sys:'vertex',ext:'VX-SD-58601',status:'reopen',due:'31.10 19:45',over:false,rating:2,
-  descr:'Санузел на 2 этаже не убирается по 2–3 дня.',photos:2,decision:'Уборка проведена, график усилен.',
-  log:[['sys','22.10 19:45','Зарегистрировано'],['out','22.10 20:00','Заявка отправлена в Vertex'],['in','23.10 12:00','Vertex: результат — уборка проведена'],['sys','23.10 13:00','Проверено'],['emp','28.10 21:10','Работник: ★★ «Проблема не устранена, опять грязно» → переоткрыто']]}
+ {id:'TRT-002417',date:'30.10.2026 07:42',type:'Жалоба',topic:'Питание',author:'Сейтказиев Н. Б.',ex:null,status:'new',due:null,
+  descr:'На ужине 29.10 гарнир был холодный, мясное блюдо закончилось к 20:30. Вторая смена осталась без горячего.',
+  log:[['app','30.10 07:42','Заявитель','Обращение подано через мобильное приложение']]},
+ {id:'TRT-002416',date:'30.10.2026 06:15',type:'Предложение',topic:'Культура и спорт',author:'Тлеубаев Р. Ж.',ex:null,status:'new',due:null,
+  descr:'Предлагаю организовать турнир по волейболу между сменами в спортзале вахты.',
+  log:[['app','30.10 06:15','Заявитель','Обращение подано через мобильное приложение']]},
+ {id:'TRT-002409',date:'29.10.2026 14:03',type:'Жалоба',topic:'Уборка и стирка',author:'Касымов Д. А.',ex:'vertex',status:'work',due:'05.11.2026',
+  descr:'Спецодежду вернули из стирки с пятнами мазута, второй раз подряд.',
+  log:[['app','29.10 14:03','Заявитель','Обращение подано'],['mod','29.10 14:20',MOD,'Направлено: Vertex-Holding, срок 05.11'],['ntf','29.10 14:20','Уведомление заявителю','Статус: Направлено исполнителю'],
+       ['ex','29.10 16:40','Vertex-Holding','Принято в работу'],['ntf','29.10 16:40','Уведомление заявителю','Статус: В работе']]},
+ {id:'TRT-002404',date:'28.10.2026 11:20',type:'Жалоба',topic:'Транспорт',author:'Ержанов М. С.',ex:'vertex',status:'sent',due:'29.10.2026',over:true,
+  descr:'Автобус на смену 28.10 опоздал на 50 минут.',
+  log:[['app','28.10 11:20','Заявитель','Обращение подано'],['mod','28.10 11:45',MOD,'Направлено: Vertex-Holding, срок 29.10'],['ntf','28.10 11:45','Уведомление заявителю','Статус: Направлено исполнителю']]},
+ {id:'TRT-002401',date:'28.10.2026 09:30',type:'Жалоба',topic:'Оплата и графики',author:'Абдрахманова А. Т.',ex:null,status:'returned',due:null,retFrom:'union',
+  retComment:'Вопрос начисления за ночные смены — не компетенция профсоюза. Просим направить в HR-департамент.',
+  descr:'В расчётном листе за сентябрь не учтены 2 ночные смены.',
+  log:[['app','28.10 09:30','Заявитель','Обращение подано'],['mod','28.10 10:00',MOD,'Направлено: Профсоюз'],['ret','28.10 15:12','Профсоюз','Возвращено модератору: «Вопрос начисления за ночные смены — не компетенция профсоюза. Просим направить в HR-департамент.»']]},
+ {id:'TRT-002398',date:'27.10.2026 18:11',type:'Жалоба',topic:'Льготы и гарантии',author:'Омаров Е. К.',ex:'hr',status:'closed',due:'03.11.2026',
+  descr:'Не выплачена материальная помощь к отпуску.',decision:'Материальная помощь начислена, выплата 05.11 вместе с авансом.',
+  log:[['app','27.10 18:11','Заявитель','Обращение подано'],['mod','27.10 18:30',MOD,'Направлено: HR-департамент КРЖ'],['ex','28.10 09:10','HR-департамент КРЖ','Принято в работу'],
+       ['ex','30.10 09:05','HR-департамент КРЖ','Закрыто. Решение: Материальная помощь начислена, выплата 05.11 вместе с авансом.'],['ntf','30.10 09:05','Уведомление заявителю','Статус: Закрыто — оцените работу исполнителя']]},
+ {id:'TRT-002390',date:'26.10.2026 12:00',type:'Предложение',topic:'Культура и спорт',author:'Мусина Л. Р.',ex:'union',status:'rated',due:'02.11.2026',rating:5,rComment:'Спасибо, быстро организовали!',
+  descr:'Организовать поездку в театр для межвахтового отдыха.',decision:'Поездка в театр 22.11, запись в профкоме.',
+  log:[['app','26.10 12:00','Заявитель','Обращение подано'],['mod','26.10 12:40',MOD,'Направлено: Профсоюз'],['ex','27.10 10:00','Профсоюз','Принято в работу'],
+       ['ex','29.10 15:30','Профсоюз','Закрыто. Решение: Поездка в театр 22.11, запись в профкоме.'],['app','29.10 19:02','Заявитель','Оценка исполнителю: 5 из 5 — «Спасибо, быстро организовали!»']]},
+ {id:'TRT-002377',date:'24.10.2026 08:20',type:'Жалоба',topic:'Проживание',author:'Жумабеков К. О.',ex:'vertex',status:'rated',due:'29.10.2026',rating:2,rComment:'Отопление починили только через 4 дня.',
+  descr:'Не работает отопление в комнате 214.',decision:'Заменён радиатор в комнате 214.',
+  log:[['app','24.10 08:20','Заявитель','Обращение подано'],['mod','24.10 08:40',MOD,'Направлено: Vertex-Holding'],['ex','24.10 10:00','Vertex-Holding','Принято в работу'],
+       ['ex','28.10 17:00','Vertex-Holding','Закрыто. Решение: Заменён радиатор в комнате 214.'],['app','28.10 21:10','Заявитель','Оценка исполнителю: 2 из 5 — «Отопление починили только через 4 дня.»']]},
+ {id:'TRT-002365',date:'22.10.2026 19:45',type:'Предложение',topic:'Другое',author:'Ли В. А.',ex:null,status:'cancel',due:null,
+  descr:'Тестовое обращение.',log:[['app','22.10 19:45','Заявитель','Обращение подано'],['mod','23.10 09:00',MOD,'Отменено: дубль / тестовое обращение']]}
 ];
-let curId = null;
+let role='mod', curId=null, fKpi=null;
 
-function $(id){return document.getElementById(id)}
+const $=id=>document.getElementById(id);
 function hide(id){$(id).classList.add('hidden')}
 function show(id){$(id).classList.remove('hidden')}
-function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),2500)}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove('on'),2600)}
 function chip(s){return `<span class="st ${ST[s][1]}">${ST[s][0]}</span>`}
-function partyOf(r){const k=r.sys||CAT[r.cat];return SYSTEMS[k]}
+function exTag(k){return k?`<span class="party ${EX[k].cls}">${EX[k].name}</span>`:'<span class="muted">не назначен</span>'}
 function stars(n){return n?`<span class="stars">${'★'.repeat(n)}${'☆'.repeat(5-n)}</span>`:'<span class="muted">—</span>'}
 function now(){const d=new Date();return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+function dueDate(days){const d=new Date();d.setDate(d.getDate()+Math.round(days*1.4));return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear()}
+function cur(){return D.find(x=>x.id===curId)}
+function visible(){return role==='mod'?D:D.filter(r=>r.ex===role&&r.status!=='returned')}
+function addLog(r,kind,who,text){r.log.push([kind,now(),who,text])}
+function notify(r){if(NOTIFY[r.status])addLog(r,'ntf','Уведомление заявителю','Статус: '+NOTIFY[r.status])}
 
 Object.entries(ST).forEach(([k,v])=>$('fStatus').insertAdjacentHTML('beforeend',`<option value="${k}">${v[0]}</option>`));
+Object.entries(EX).forEach(([k,v])=>$('fExec').insertAdjacentHTML('beforeend',`<option value="${k}">${v.name}</option>`));
+TOPICS.forEach(t=>$('fTopic').insertAdjacentHTML('beforeend',`<option>${t}</option>`));
 
+function setRole(r){role=r;fKpi=null;curId=null;closeEdit()}
+function kpi(cls,n,label,key){return `<div class="kpi ${cls}" onclick="fKpi=fKpi==='${key}'?null:'${key}';renderGrid()" style="${fKpi===key?'border-color:#197de1;box-shadow:0 0 0 2px #d6e8fb':''}"><b>${n}</b><span>${label}</span></div>`}
+const KF={
+  new:r=>r.status==='new', returned:r=>r.status==='returned', atex:r=>['sent','work'].includes(r.status), over:r=>r.over,
+  done:r=>['closed','rated'].includes(r.status), sent:r=>r.status==='sent', work:r=>r.status==='work'
+};
 function renderGrid(){
-  const fs=$('fStatus').value,fp=$('fParty').value,ft=$('fType').value,tx=$('fText').value.toLowerCase(),fo=$('fOver').checked;
-  const rows=D.filter(r=>(!fs||r.status===fs)&&(!fp||partyOf(r).party===fp)&&(!ft||r.type===ft)&&(!fo||r.over)
-     &&(!tx||(r.id+r.author+r.descr).toLowerCase().includes(tx)));
-  $('grid').innerHTML=rows.map(r=>{const p=partyOf(r);return `<tr class="${r.over?'overdue':''} ${r.id===curId?'sel':''}" onclick="sel('${r.id}')" ondblclick="openEdit('${r.id}')">
-    <td>${r.id}</td><td>${r.date}</td><td>${r.type}</td><td>${r.cat}</td><td>${r.author}</td><td>${r.site}</td>
-    <td><span class="party ${p.cls}">${p.party}</span></td><td>${r.ext?r.ext:'<span class="muted">не отправлено</span>'}</td>
-    <td>${chip(r.status)}</td><td style="${r.over?'color:#c62828;font-weight:600':''}">${r.due}</td><td>${stars(r.rating)}</td></tr>`}).join('');
-  $('rows').textContent=`Строк: ${rows.length} из ${D.length}`;
-  $('kNew').textContent=D.filter(r=>['new','assigned','reopen'].includes(r.status)).length;
-  $('kSent').textContent=D.filter(r=>['sent','work','result'].includes(r.status)).length;
-  $('kWork').textContent=D.filter(r=>r.status==='work').length;
-  $('kOver').textContent=D.filter(r=>r.over).length;
-  const rt=D.filter(r=>r.rating);$('kRate').textContent=rt.length?(rt.reduce((a,r)=>a+r.rating,0)/rt.length).toFixed(1)+' ★':'—';
+  const V=visible(), c=k=>V.filter(KF[k]).length;
+  $('brTitle').textContent=role==='mod'?'Обращения — все (модератор)':'Обращения — направленные: '+EX[role].name;
+  $('fExecWrap').classList.toggle('hidden',role!=='mod');
+  $('kpis').innerHTML=role==='mod'
+    ? kpi('blue',c('new'),'Новые — нужно распределить','new')+kpi('red',c('returned'),'Возвращены исполнителями','returned')+kpi('orange',c('atex'),'У исполнителей, не обработаны','atex')+kpi('red',c('over'),'Просрочены','over')+kpi('green',c('done'),'Обработаны (закрыты)','done')
+    : kpi('blue',c('sent'),'Новые, ждут принятия','sent')+kpi('orange',c('work'),'В работе','work')+kpi('red',c('over'),'Просрочены','over')+kpi('green',c('done'),'Закрыты мной','done');
+  const fs=$('fStatus').value,fe=$('fExec').value,ft=$('fType').value,fp=$('fTopic').value,tx=$('fText').value.toLowerCase();
+  const rows=V.filter(r=>(!fKpi||KF[fKpi](r))&&(!fs||r.status===fs)&&(!fe||(fe==='none'?!r.ex:r.ex===fe))&&(!ft||r.type===ft)&&(!fp||r.topic===fp)&&(!tx||(r.id+r.author+r.descr).toLowerCase().includes(tx)));
+  $('grid').innerHTML=rows.map(r=>`<tr class="${r.over?'overdue':''} ${r.id===curId?'sel':''}" onclick="selRow('${r.id}')" ondblclick="openEdit('${r.id}')">
+    <td>${r.id}</td><td>${r.date}</td><td>${r.type}</td><td>${r.topic}</td><td>${r.author}</td><td>${exTag(r.ex)}</td><td>${chip(r.status)}</td>
+    <td style="${r.over?'color:#c62828;font-weight:600':''}">${r.due||'—'}</td><td>${stars(r.rating)}</td></tr>`).join('')
+    || '<tr><td colspan="9" class="muted" style="text-align:center;padding:20px">Нет обращений</td></tr>';
+  $('rows').textContent=`Строк: ${rows.length} из ${V.length}`;
 }
-function sel(id){curId=id;renderGrid()}
+function selRow(id){curId=id;renderGrid()}
 function showBrowse(){$('tabBrowse').classList.add('on');$('tabEdit').classList.remove('on');show('browse');hide('edit');renderGrid()}
 function closeEdit(){hide('tabEdit');showBrowse()}
 function openEdit(id){
-  curId=id;const r=D.find(x=>x.id===id);
-  show('tabEdit');$('tabEdit').classList.add('on');$('tabBrowse').classList.remove('on');hide('browse');show('edit');
-  $('tabEditTitle').textContent=r.id;renderEdit(r);
+  curId=id;show('tabEdit');$('tabEdit').classList.add('on');$('tabBrowse').classList.remove('on');hide('browse');show('edit');
+  $('tabEditTitle').textContent=id;renderEdit();
 }
-function renderEdit(r){
-  const p=partyOf(r);
-  $('edTitle').innerHTML=`Обращение ${r.id} &nbsp; ${chip(r.status)}`;
-  const idx=r.status==='reopen'?2:r.status==='cancel'?-1:PATH.findIndex(x=>x[0]===r.status);
-  $('path').innerHTML=PATH.map((s,i)=>`<div class="stp ${i<idx?'done':i===idx?'cur':''}"><i>${i<idx?'✓':i+1}</i><br>${s[1]}</div>`).join('');
+function renderEdit(){
+  const r=cur(), s=r.status;
+  $('edTitle').innerHTML=`Обращение ${r.id} &nbsp; ${chip(s)}`;
+  const idx={new:0,returned:0,sent:1,work:2,closed:3,rated:4,cancel:-1}[s];
+  $('path').innerHTML=PATH.map((p,i)=>{
+    let c=i<idx?'done':i===idx?'cur':'', label=p[1];
+    if(s==='returned'&&i===1){c='bad';label='Возвращено'}
+    if(s==='rated'&&i===4)c='done';
+    return `<div class="stp ${c}"><i>${c==='done'?'✓':i+1}</i><br>${label}</div>`}).join('');
+  let al='';
+  if(s==='returned')al+=`<div class="alert red"><b>${EX[r.retFrom].name} вернул обращение модератору.</b><br>Комментарий: ${r.retComment}</div>`;
+  if(s==='new'&&role==='mod')al+=`<div class="alert blue">Новое обращение. Выберите ответственного исполнителя и направьте на исполнение.</div>`;
+  if(s==='sent'&&role!=='mod')al+=`<div class="alert blue">Обращение направлено вам модератором${r.sComment?': «'+r.sComment+'»':''}. Примите в работу или верните модератору, если вопрос не в вашей компетенции.</div>`;
+  if(s==='closed')al+=`<div class="alert green">Обращение закрыто исполнителем. Заявителю отправлено уведомление, ожидается оценка.</div>`;
+  $('alerts').innerHTML=al;
   $('form').innerHTML=`
-    <div class="l">Номер обращения</div><div class="v">${r.id}</div>
+    <div class="l">Номер</div><div class="v">${r.id}</div>
     <div class="l">Дата регистрации</div><div class="v">${r.date}</div>
-    <div class="l">Автор</div><div class="v">${r.author}</div>
+    <div class="l">Заявитель</div><div class="v">${r.author}</div>
     <div class="l">Источник</div><div class="v">Мобильное приложение</div>
-    <div class="l req">Тип</div><div class="v edit">${r.type}</div>
-    <div class="l req">Категория</div><div class="v edit">${r.cat}</div>
-    <div class="l">Площадка</div><div class="v">${r.site}</div>
-    <div class="l">Ответственная сторона</div><div class="v"><span class="party ${p.cls}">${p.party}</span></div>
-    <div class="l">Ответственное лицо</div><div class="v edit">Ахметова Г. (диспетчер)</div>
-    <div class="l">Срок (SLA)</div><div class="v" style="${r.over?'color:#c62828;font-weight:600':''}">${r.due}${r.over?' — просрочено':''}</div>`;
+    <div class="l">Тип</div><div class="v">${r.type}</div>
+    <div class="l">Тема</div><div class="v">${r.topic}</div>
+    <div class="l">Исполнитель</div><div class="v">${exTag(r.ex)}</div>
+    <div class="l">Срок исполнения</div><div class="v" style="${r.over?'color:#c62828;font-weight:600':''}">${r.due||'—'}${r.over?' — просрочено':''}</div>`;
   $('eDescr').textContent=r.descr;
-  $('ePhotos').innerHTML=Array.from({length:r.photos},(_,i)=>`<div class="ph">фото ${i+1}</div>`).join('');
-  $('eDecision').value=r.decision||'';
-  // rating
-  $('rateBox').innerHTML = r.rating
-    ? `<h3>Оценка работника</h3><div>${stars(r.rating)} &nbsp; ${r.rating<=2?'<span class="st s-reopen">Работник: проблема не устранена</span>':'<span class="st s-rated">Работник доволен результатом</span>'}</div>`
-    : `<h3>Оценка работника</h3><div class="muted">${r.status==='checked'?'Ожидаем оценку в мобильном приложении (push отправлен).':'Оценка появится после проверки результата.'}</div>`;
-  // actions (существующие + новые)
-  const s=r.status, A=[];
-  if(['new','assigned','reopen'].includes(s)) A.push(`<button class="btn send" onclick="openSend()">Отправить заявку</button>`);
-  if(s==='new') A.push(`<button class="btn primary" onclick="setSt('assigned','Принято в работу диспетчером')">Принять</button>`);
-  if(s==='result') A.push(`<button class="btn ok" onclick="setSt('checked','Результат проверен, работнику отправлен запрос на оценку')">Подтвердить результат</button>`,`<button class="btn" onclick="show('dlgReturn')">Вернуть исполнителю</button>`);
-  if(s==='checked') A.push(`<button class="btn" onclick="toast('Push-напоминание об оценке отправлено')">Напомнить об оценке</button>`);
-  if(s==='rated') A.push(`<button class="btn ok" onclick="toast('Обращение закрыто');closeEdit()">Закрыть обращение</button>`);
-  if(['sent','work'].includes(s)) A.push(`<button class="btn" onclick="poll()">Запросить статус</button>`);
-  A.push(`<button class="btn" onclick="toast('Сохранено')">Сохранить</button>`,`<button class="btn" onclick="toast('Перенаправлено')">Перенаправить</button>`,`<span class="sp"></span>`);
-  if(!['rated','cancel'].includes(s)) A.push(`<button class="btn danger" onclick="setSt('cancel','Отменено диспетчером')">Отменить</button>`);
-  A.push(`<button class="btn" onclick="closeEdit()">Закрыть</button>`);
-  $('actions').innerHTML=A.join('');
-  // ext panel
-  if(r.sys){
-    const S=SYSTEMS[r.sys], pct={sent:25,work:60,result:90,checked:100,rated:100,reopen:40}[s]||10;
-    $('extBox').innerHTML=`<h3>Заявка во внешней системе <span>${chip(s)}</span></h3>
-      <div class="ticket">
-        <div class="l">Система</div><div><b>${S.name}</b></div>
-        <div class="l">№ заявки</div><div><a href="#" onclick="toast('Открыть заявку во внешней системе (ссылка)');return false">${r.ext}</a></div>
-        <div class="l">Сторона</div><div><span class="party ${S.cls}">${S.party}</span></div>
-        <div class="l">Последний ответ</div><div>${(r.log.filter(l=>l[0]==='in').slice(-1)[0]||['','—','—'])[2]}</div>
-        <div class="l">SLA</div><div class="sla"><div class="bar ${r.over?'bad':pct<50?'warn':''}"><div style="width:${r.over?100:pct}%"></div></div>${r.over?'просрочено':'до '+r.due}</div>
-      </div>`;
-  } else {
-    const k=CAT[r.cat],S=SYSTEMS[k];
-    $('extBox').innerHTML=`<h3>Заявка во внешней системе</h3>
-      <div class="muted" style="margin-bottom:8px">Заявка ещё не отправлена.</div>
-      <div>По матрице ответственности категория <b>«${r.cat}»</b> → <span class="party ${S.cls}">${S.party}</span>, система <b>${S.name}</b>.</div>
-      <div style="margin-top:10px"><button class="btn send" onclick="openSend()">Отправить заявку</button></div>`;
+  $('eDecision').innerHTML=r.decision||'<span class="muted">Заполняет исполнитель при закрытии</span>';
+  $('rateBox').innerHTML=`<h3>Оценка работы исполнителя заявителем</h3>`+(r.rating
+    ? `<div>${stars(r.rating)} &nbsp; <b>${r.rating} из 5</b> — ${EX[r.ex].name}</div>${r.rComment?`<div class="muted" style="margin-top:4px">«${r.rComment}»</div>`:''}`
+    : `<div class="muted">${s==='closed'?'Заявитель ещё не оценил. Оценку он ставит в мобильном приложении.':'Доступна заявителю после закрытия обращения.'}</div>`);
+  const A=[];
+  if(role==='mod'){
+    if(['new','returned'].includes(s))A.push(`<button class="btn primary" onclick="openSend()">Направить исполнителю</button>`);
+    if(['sent','work'].includes(s))A.push(`<button class="btn" onclick="openSend()">Перенаправить другому исполнителю</button>`,`<button class="btn" onclick="toast('Напоминание отправлено исполнителю')">Напомнить исполнителю</button>`);
+    if(s==='closed')A.push(`<button class="btn" onclick="toast('Push-напоминание об оценке отправлено заявителю')">Напомнить заявителю об оценке</button>`);
+    if(s==='closed')A.push(`<button class="btn" onclick="simRate()">Демо: заявитель поставил оценку</button>`);
+    A.push('<span class="sp"></span>');
+    if(['new','returned'].includes(s))A.push(`<button class="btn danger" onclick="doCancel()">Отменить обращение</button>`);
+  } else if(r.ex===role){
+    if(s==='sent')A.push(`<button class="btn primary" onclick="doAccept()">Принять в работу</button>`);
+    if(['sent','work'].includes(s))A.push(`<button class="btn ok" onclick="openText('close')">Закрыть с решением</button>`,'<span class="sp"></span>',`<button class="btn warn" onclick="openText('return')">Вернуть модератору</button>`);
   }
-  const cls={sys:['sys','s','Система'],out:['out','o','Исх.'],in:['in','i','Вх.'],emp:['emp','e','Работник']};
-  $('log').innerHTML=r.log.slice().reverse().map(l=>`<li class="${cls[l[0]][0]}"><span class="dir ${cls[l[0]][1]}">${cls[l[0]][2]}</span>${l[2]}<br><span class="t">${l[1]}</span></li>`).join('');
-  // simulator (вместо реальной внешней системы)
-  $('simu').innerHTML = (['sent','work'].includes(s)&&r.sys)
-    ? `<b>Имитация ответа внешней системы (только для демонстрации)</b>
-       ${s==='sent'?`<button class="btn" onclick="extIn('work','назначен исполнитель, работы начаты')">Исполнитель взял в работу</button>`:''}
-       <button class="btn" onclick="extIn('result','результат — работы выполнены, приложено фото')">Пришёл результат</button>
-       <button class="btn" onclick="extIn('assigned','отклонено — не наша компетенция, вернуть диспетчеру')">Система отклонила</button>`
-    : `<b>Имитация внешней системы</b><span class="muted">Кнопки появятся, когда заявка будет отправлена (статусы «Отправлено» / «В работе»).</span>`;
+  A.push(`<button class="btn" onclick="closeEdit()">Закрыть окно</button>`);
+  $('actions').innerHTML=A.join('');
+  $('log').innerHTML=r.log.slice().reverse().map(l=>`<li class="${l[0]}"><span class="who">${l[2]}</span>: ${l[3]}<br><span class="t">${l[1]}</span></li>`).join('');
 }
-function cur(){return D.find(x=>x.id===curId)}
-function setSt(s,msg,kind='sys'){const r=cur();r.status=s;r.log.push([kind,now(),msg]);if(s!=='sent')r.over=false;renderEdit(r);toast(ST[s][0])}
 function openSend(){
-  const r=cur(),rec=r.sys||CAT[r.cat];
-  $('dlgInfo').innerHTML=`${r.id} · ${r.cat} · ${r.site}`;
-  $('sysList').innerHTML=Object.entries(SYSTEMS).map(([k,S])=>`<label class="${k===rec?'rec':''}"><input type="radio" name="sys" value="${k}" ${k===rec?'checked':''}><span><b>${S.name}</b><small>${S.d}</small></span></label>`).join('');
-  $('recHint').textContent=`Рекомендовано по матрице ответственности для категории «${r.cat}»`;
-  $('dComment').value=r.status==='reopen'?'Повторно: работник оценил на 2★, проблема не устранена. Прошу проверить на месте.':'';
-  show('dlgSend');
+  const r=cur();
+  $('sendInfo').textContent=`${r.id} · ${r.type} · ${r.topic}`;
+  $('opts').innerHTML=Object.entries(EX).map(([k,e])=>{const dis=r.status==='returned'&&r.retFrom===k||r.ex===k&&r.status!=='returned';
+    return `<label class="${dis?'dis':''}"><input type="radio" name="ex" value="${k}" ${dis?'disabled':''}><span><b>${e.name}</b><small>${e.d}</small>${dis?'<small>уже был назначен</small>':''}</span></label>`}).join('');
+  $('sComment').value='';$('sErr').textContent='';show('dlgSend');
 }
 function doSend(){
-  const r=cur(),k=document.querySelector('input[name=sys]:checked').value,S=SYSTEMS[k];
-  r.sys=k;r.ext=S.pfx+(58900+Math.floor(Math.random()*90));r.rating=r.status==='reopen'?r.rating:undefined;
-  hide('dlgSend');
-  r.log.push(['out',now(),`Заявка отправлена в ${S.name}${$('dComment').value?': «'+$('dComment').value+'»':''}`]);
-  r.status='sent';renderEdit(r);toast('Заявка отправлена, ждём подтверждения…');
-  setTimeout(()=>{r.log.push(['in',now(),`${S.party}: заявка принята, № ${r.ext}`]);renderEdit(r);toast('Внешняя система приняла заявку '+r.ext)},1500);
+  const k=(document.querySelector('input[name=ex]:checked')||{}).value;
+  if(!k){$('sErr').textContent='Выберите исполнителя';return}
+  const r=cur(), days=+$('sDue').value;
+  r.ex=k;r.status='sent';r.due=dueDate(days);r.over=false;r.sComment=$('sComment').value;
+  addLog(r,'mod',MOD,`Направлено: ${EX[k].name}, срок ${r.due}${r.sComment?'. Комментарий: «'+r.sComment+'»':''}`);notify(r);
+  hide('dlgSend');renderEdit();toast('Направлено: '+EX[k].name+'. Заявитель уведомлён.');
 }
-function extIn(s,msg){
-  const r=cur(),S=SYSTEMS[r.sys];
-  r.log.push(['in',now(),`${S.party}: ${msg}`]);
-  if(s==='assigned'){r.sys=null;r.ext=null}
-  if(s==='result')r.decision='Работы выполнены исполнителем '+S.party+'. Фото «после» приложено.';
-  r.status=s;r.over=false;renderEdit(r);toast('Статус обновлён по ответу внешней системы: '+ST[s][0]);
-  if(s==='result')setTimeout(()=>toast('Работнику отправлено push-уведомление'),2700);
+function doAccept(){const r=cur();r.status='work';addLog(r,'ex',EX[role].name,'Принято в работу');notify(r);renderEdit();toast('Принято в работу. Заявитель уведомлён.')}
+let tMode=null;
+function openText(m){
+  tMode=m;$('tErr').textContent='';$('tText').value='';
+  $('tTitle').textContent=m==='close'?'Закрыть обращение':'Вернуть модератору';
+  $('tHint').textContent=m==='close'?'Решение увидит заявитель в приложении и сможет оценить вашу работу.':'Укажите, почему обращение не относится к вам. Модератор направит его другому исполнителю.';
+  $('tLabel').textContent=m==='close'?'Решение / что сделано *':'Комментарий *';
+  $('tOk').textContent=m==='close'?'Закрыть':'Вернуть';$('tOk').onclick=doText;show('dlgText');
 }
-function poll(){const r=cur();r.log.push(['sys',now(),'Запрошен статус во внешней системе: без изменений']);renderEdit(r);toast('Статус запрошен')}
-function doReturn(){const r=cur();hide('dlgReturn');r.log.push(['out',now(),'Возврат исполнителю: «'+$('rReason').value+'»']);r.status='work';renderEdit(r);toast('Возвращено исполнителю')}
+function doText(){
+  const v=$('tText').value.trim(),r=cur();
+  if(v.length<3){$('tErr').textContent='Заполните поле';return}
+  if(tMode==='close'){r.status='closed';r.decision=v;r.over=false;addLog(r,'ex',EX[role].name,'Закрыто. Решение: '+v);notify(r);toast('Обращение закрыто. Заявитель уведомлён.')}
+  else{r.retFrom=r.ex;r.retComment=v;r.ex=null;r.status='returned';r.over=false;r.due=null;addLog(r,'ret',EX[role].name,'Возвращено модератору: «'+v+'»');toast('Возвращено модератору')}
+  hide('dlgText');
+  if(tMode==='return')closeEdit();else renderEdit();
+}
+function doCancel(){const r=cur();r.status='cancel';addLog(r,'mod',MOD,'Отменено');notify(r);renderEdit();toast('Отменено, заявитель уведомлён')}
+function simRate(){const r=cur();r.rating=4;r.rComment='Хорошо, но можно быстрее';r.status='rated';addLog(r,'app','Заявитель',`Оценка исполнителю: 4 из 5 — «${r.rComment}»`);renderEdit();toast('Заявитель оценил работу: 4 из 5')}
 
 renderGrid();
 </script>

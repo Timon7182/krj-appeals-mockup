@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Обращения работников — аналитика (макет)</title>
+<style>
+  .viz-root{
+    color-scheme:light;
+    --surface-0:#f3f4f6; --surface-1:#fcfcfb; --line:#e4e4e1; --grid:#ececea;
+    --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#8a8984;
+    --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a;
+    --seq:#2a78d6; --critical:#c62828; --good:#2e7d32;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",Roboto,Arial,sans-serif;font-size:13px}
+  .viz-root{background:var(--surface-0);color:var(--text-primary);min-height:100vh;padding:20px 24px 40px}
+  header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+  h1{font-size:20px;margin:0;font-weight:600}
+  header p{margin:4px 0 0;color:var(--text-secondary)}
+  .filters{display:flex;gap:8px;flex-wrap:wrap}
+  .filters select{font:inherit;height:32px;border:1px solid var(--line);border-radius:6px;background:var(--surface-1);padding:0 8px;color:var(--text-primary)}
+  .tiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:14px}
+  .tile{background:var(--surface-1);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+  .tile .v{font-size:26px;font-weight:600;line-height:1.1}
+  .tile .l{color:var(--text-secondary);margin-top:4px}
+  .tile .d{font-size:12px;color:var(--text-muted);margin-top:2px}
+  .tile .d.bad{color:var(--critical)}.tile .d.ok{color:var(--good)}
+  .row{display:grid;gap:14px;margin-bottom:14px}
+  .r2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .r3{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr)}
+  .card{background:var(--surface-1);border:1px solid var(--line);border-radius:8px;padding:14px 16px;min-width:0}
+  .card h2{font-size:14px;margin:0 0 2px;font-weight:600}
+  .card .sub{color:var(--text-muted);font-size:12px;margin-bottom:10px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--text-secondary);font-size:12px;margin-bottom:6px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+  .legend i.ln{height:2px;width:14px;border-radius:1px;vertical-align:3px}
+  svg{display:block;width:100%;height:auto;overflow:visible}
+  svg text{fill:var(--text-secondary);font-size:11.5px}
+  svg .lbl{fill:var(--text-primary);font-weight:600}
+  .hit{fill:transparent;cursor:default}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:right;font-weight:600;color:var(--text-secondary);font-size:12px;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  td{text-align:right;padding:8px;border-bottom:1px solid var(--grid);font-variant-numeric:tabular-nums;white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:7px;vertical-align:-1px}
+  .bad{color:var(--critical);font-weight:600}
+  .tip{position:fixed;pointer-events:none;background:#1f1f1e;color:#f0efec;padding:7px 10px;border-radius:6px;font-size:12px;line-height:1.45;opacity:0;transition:opacity .1s;z-index:5;white-space:nowrap}
+  .tip b{color:#fff}
+  .tview{margin-top:8px;font-size:12px}
+  .tview summary{cursor:pointer;color:var(--text-muted)}
+  .tview table td,.tview table th{padding:4px 6px}
+  .note{color:var(--text-muted);font-size:12px;margin-top:10px}
+  @media(max-width:1100px){.tiles{grid-template-columns:repeat(3,1fr)}.r2,.r3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="viz-root">
+<header>
+  <div>
+    <h1>Обращения работников — аналитика</h1>
+    <p>Каражыра · модуль «Предложения по улучшению» · для Хаба</p>
+  </div>
+  <div class="filters">
+    <select><option>Октябрь 2026</option><option>Последние 90 дней</option><option>2026 год</option></select>
+    <select id="fEx" onchange="render()"><option value="">Все исполнители</option><option value="0">Vertex-Holding</option><option value="1">Профсоюз</option><option value="2">HR-департамент КРЖ</option></select>
+    <select><option>Все площадки</option><option>Вахта №1</option><option>Вахта №2</option><option>Рудник</option><option>ОФ</option></select>
+  </div>
+</header>
+
+<div class="tiles" id="tiles"></div>
+
+<div class="row r2">
+  <div class="card">
+    <h2>Рейтинг исполнителей</h2>
+    <div class="sub">Средняя оценка заявителей, из 5 · в скобках — число оценок</div>
+    <div id="cRating"></div>
+  </div>
+  <div class="card">
+    <h2>Обращения по исполнителям</h2>
+    <div class="sub">Сколько получено и в каком состоянии</div>
+    <div class="legend"><span><i style="background:#2e7d32"></i>Закрыто</span><span><i style="background:#8fb8e8"></i>В работе</span><span><i style="background:#c62828"></i>Просрочено</span></div>
+    <div id="cLoad"></div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="card">
+    <h2>Показатели исполнителей</h2>
+    <div class="sub">Возвраты — обращения, которые исполнитель вернул модератору как «не наша компетенция»</div>
+    <table id="tScore"></table>
+  </div>
+</div>
+
+<div class="row r3">
+  <div class="card">
+    <h2>Поступило и закрыто по неделям</h2>
+    <div class="legend"><span><i class="ln" style="background:var(--series-1)"></i>Поступило</span><span><i class="ln" style="background:var(--series-3)"></i>Закрыто</span></div>
+    <div id="cTrend"></div>
+  </div>
+  <div class="card">
+    <h2>По темам</h2>
+    <div class="sub">Число обращений</div>
+    <div id="cTopic"></div>
+  </div>
+  <div class="card">
+    <h2>По типам</h2>
+    <div class="sub">Жалобы / предложения, средняя оценка</div>
+    <div id="cType"></div>
+    <h2 style="margin-top:16px">Распределение оценок</h2>
+    <div class="sub">Сколько раз ставили 1…5</div>
+    <div id="cDist"></div>
+  </div>
+</div>
+<div class="note">Макет, данные вымышленные. Наведите на столбец или точку — появится подсказка. Под каждым графиком есть раскрывающаяся таблица.</div>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+const EXN=['Vertex-Holding','Профсоюз','HR-департамент КРЖ'], EXC=['var(--series-1)','var(--series-2)','var(--series-3)'];
+// по исполнителю: получено, закрыто, в работе, просрочено, возвраты, ср. часы до закрытия, ср. оценка, число оценок, распределение 1..5
+const EX=[
+  {got:64,closed:51,work:9,over:4,ret:3,hours:41,rate:3.6,nr:38,dist:[3,5,8,12,10]},
+  {got:27,closed:24,work:3,over:0,ret:5,hours:30,rate:4.5,nr:19,dist:[0,0,2,5,12]},
+  {got:38,closed:29,work:6,over:3,ret:1,hours:66,rate:3.9,nr:22,dist:[1,2,4,8,7]}
+];
+const TOPICS=[['Питание',31,[31,0,0]],['Проживание',19,[19,0,0]],['Оплата и графики',18,[0,0,18]],['Уборка и стирка',9,[9,0,0]],['Культура и спорт',14,[0,14,0]],['Льготы и гарантии',12,[0,2,10]],['Транспорт',5,[5,0,0]],['Защита трудовых прав',8,[0,6,2]],['Другое',13,[0,5,8]]];
+const TYPES=[['Жалобы',[48,9,30],[3.4,4.1,3.7]],['Предложения',[16,18,8],[4.3,4.7,4.4]]];
+const WEEKS=['30.09','07.10','14.10','21.10','28.10'];
+const TREND={got:[[11,4,7],[14,6,8],[13,5,7],[15,7,9],[11,5,7]],closed:[[8,4,5],[12,5,6],[13,5,6],[10,6,7],[8,4,5]]};
+const NEW_UNASSIGNED=6;
+
+const $=id=>document.getElementById(id);
+const tip=$('tip');
+function showTip(ev,html){tip.innerHTML=html;tip.style.opacity=1;const x=Math.min(ev.clientX+14,innerWidth-tip.offsetWidth-8);tip.style.left=x+'px';tip.style.top=(ev.clientY+14)+'px'}
+function hideTip(){tip.style.opacity=0}
+document.addEventListener('mousemove',e=>{const t=e.target.closest('[data-tip]');t?showTip(e,t.dataset.tip):hideTip()});
+const sel=()=>$('fEx').value===''?[0,1,2]:[+$('fEx').value];
+const sum=a=>a.reduce((x,y)=>x+y,0);
+const fmt=n=>String(n).replace('.',',');
+function bar(x,y,w,h,fill,t){ // скругление 4px только на конце данных
+  if(w<=0)return'';const r=Math.min(4,w,h/2);
+  return `<path d="M${x},${y}h${w-r}a${r},${r} 0 0 1 ${r},${r}v${h-2*r}a${r},${r} 0 0 1 -${r},${r}h-${w-r}z" fill="${fill}"${t?` data-tip="${t}"`:''}/>`;
+}
+function tableView(head,rows){return `<details class="tview"><summary>Таблица</summary><table><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</table></details>`}
+
+function render(){
+  const S=sel(), E=S.map(i=>EX[i]);
+  const got=sum(E.map(e=>e.got)), closed=sum(E.map(e=>e.closed)), over=sum(E.map(e=>e.over)), ret=sum(E.map(e=>e.ret)), nr=sum(E.map(e=>e.nr));
+  const rate=sum(E.map(e=>e.rate*e.nr))/nr, hours=sum(E.map(e=>e.hours*e.closed))/closed;
+  $('tiles').innerHTML=[
+    [got+(S.length===3?NEW_UNASSIGNED:0),'Всего обращений',S.length===3?`из них ${NEW_UNASSIGNED} ждут модератора`:'направлено исполнителю',''],
+    [Math.round(closed/got*100)+'%','Закрыто',`${closed} из ${got}`,''],
+    [fmt((hours/24).toFixed(1))+' дн','Среднее время до закрытия','от направления до закрытия',''],
+    [over,'Просрочено','срок исполнения истёк',over?'bad':'ok'],
+    [fmt(rate.toFixed(1))+' из 5','Средняя оценка',`${nr} оценок заявителей`,''],
+    [ret,'Возвращено модератору','«не наша компетенция»','']
+  ].map(t=>`<div class="tile"><div class="v">${t[0]}</div><div class="l">${t[1]}</div><div class="d ${t[3]}">${t[2]}</div></div>`).join('');
+
+  // рейтинг
+  {const W=520,rowH=40,L=150,R=70,H=S.length*rowH+24,sx=v=>(W-L-R)*v/5;let g='';
+   [0,1,2,3,4,5].forEach(v=>g+=`<line x1="${L+sx(v)}" x2="${L+sx(v)}" y1="0" y2="${H-20}" stroke="var(--grid)"/><text x="${L+sx(v)}" y="${H-4}" text-anchor="middle">${v}</text>`);
+   S.forEach((i,k)=>{const e=EX[i],y=k*rowH+8;
+     g+=`<text x="0" y="${y+16}" class="lbl" style="font-weight:400;fill:var(--text-primary)">${EXN[i]}</text>`;
+     g+=bar(L,y+4,sx(e.rate),18,EXC[i]);
+     g+=`<text x="${L+sx(e.rate)+8}" y="${y+17}" class="lbl">${fmt(e.rate)} <tspan style="font-weight:400;fill:var(--text-muted)">(${e.nr})</tspan></text>`;
+     g+=`<rect class="hit" x="0" y="${y}" width="${W}" height="${rowH-6}" data-tip="<b>${EXN[i]}</b><br>Средняя оценка: ${fmt(e.rate)} из 5<br>Оценок: ${e.nr}"/>`});
+   $('cRating').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Средняя оценка по исполнителям">${g}</svg>`+tableView(['Исполнитель','Оценка','Оценок'],S.map(i=>[EXN[i],fmt(EX[i].rate),EX[i].nr]));}
+
+  // нагрузка (stacked)
+  {const W=520,rowH=40,L=150,R=40,H=S.length*rowH+24,mx=Math.max(...S.map(i=>EX[i].got)),sx=v=>(W-L-R)*v/mx;let g='';
+   S.forEach((i,k)=>{const e=EX[i],y=k*rowH+8,parts=[[e.closed,'#2e7d32','Закрыто'],[e.work,'#8fb8e8','В работе'],[e.over,'#c62828','Просрочено']];let x=L;
+     g+=`<text x="0" y="${y+16}" style="fill:var(--text-primary)">${EXN[i]}</text>`;
+     parts.forEach((p,j)=>{const w=sx(p[0]);const last=j===parts.length-1||parts.slice(j+1).every(q=>!q[0]);
+       g+=last?bar(x,y+4,Math.max(w-0,0),18,p[1],`<b>${EXN[i]}</b><br>${p[2]}: ${p[0]}`):`<rect x="${x}" y="${y+4}" width="${Math.max(w-2,0)}" height="18" fill="${p[1]}" data-tip="<b>${EXN[i]}</b><br>${p[2]}: ${p[0]}"/>`;x+=w});
+     g+=`<text x="${x+8}" y="${y+17}" class="lbl">${e.got}</text>`});
+   $('cLoad').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Обращения по исполнителям">${g}</svg>`+tableView(['Исполнитель','Получено','Закрыто','В работе','Просрочено'],S.map(i=>[EXN[i],EX[i].got,EX[i].closed,EX[i].work,EX[i].over]));}
+
+  // scorecard
+  $('tScore').innerHTML=`<tr><th>Исполнитель</th><th>Получено</th><th>Закрыто</th><th>% закрытия</th><th>В работе</th><th>Просрочено</th><th>Возвраты</th><th>Ср. время до закрытия</th><th>Ср. оценка</th><th>Оценок</th></tr>`+
+    S.map(i=>{const e=EX[i];return `<tr><td><span class="sw" style="background:${EXC[i]}"></span>${EXN[i]}</td><td>${e.got}</td><td>${e.closed}</td><td>${Math.round(e.closed/e.got*100)}%</td><td>${e.work}</td><td class="${e.over?'bad':''}">${e.over}</td><td>${e.ret}</td><td>${fmt((e.hours/24).toFixed(1))} дн</td><td><b>${fmt(e.rate)}</b></td><td>${e.nr}</td></tr>`}).join('');
+
+  // тренд
+  {const W=560,H=230,L=30,R=40,T=10,B=26,g2=TREND.got.map(w=>sum(S.map(i=>w[i]))),c2=TREND.closed.map(w=>sum(S.map(i=>w[i])));
+   const mx=Math.ceil(Math.max(...g2,...c2)/5)*5,sx=k=>L+(W-L-R)*k/(WEEKS.length-1),sy=v=>T+(H-T-B)*(1-v/mx);let g='';
+   for(let v=0;v<=mx;v+=mx/5)g+=`<line x1="${L}" x2="${W-R}" y1="${sy(v)}" y2="${sy(v)}" stroke="var(--grid)"/><text x="${L-6}" y="${sy(v)+4}" text-anchor="end">${v}</text>`;
+   WEEKS.forEach((w,k)=>g+=`<text x="${sx(k)}" y="${H-6}" text-anchor="middle">${w}</text>`);
+   [[g2,'var(--series-1)','Поступило'],[c2,'var(--series-3)','Закрыто']].forEach(([a,c,n])=>{
+     g+=`<polyline points="${a.map((v,k)=>sx(k)+','+sy(v)).join(' ')}" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round"/>`;
+     a.forEach((v,k)=>g+=`<circle cx="${sx(k)}" cy="${sy(v)}" r="4" fill="${c}" stroke="var(--surface-1)" stroke-width="2"/>`);
+     g+=`<text x="${sx(a.length-1)+8}" y="${sy(a[a.length-1])+4}" class="lbl">${a[a.length-1]}</text>`});
+   WEEKS.forEach((w,k)=>g+=`<rect class="hit" x="${sx(k)-24}" y="${T}" width="48" height="${H-T-B}" data-tip="<b>Неделя с ${w}</b><br>Поступило: ${g2[k]}<br>Закрыто: ${c2[k]}"/>`);
+   $('cTrend').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Поступило и закрыто по неделям">${g}</svg>`+tableView(['Неделя','Поступило','Закрыто'],WEEKS.map((w,k)=>[w,g2[k],c2[k]]));}
+
+  // темы
+  {const rows=TOPICS.map(t=>[t[0],sum(S.map(i=>t[2][i]))]).filter(t=>t[1]>0).sort((a,b)=>b[1]-a[1]);
+   const W=380,rowH=24,L=140,R=34,H=rows.length*rowH,mx=Math.max(...rows.map(r=>r[1])),sx=v=>(W-L-R)*v/mx;let g='';
+   rows.forEach((r,k)=>{const y=k*rowH;g+=`<text x="0" y="${y+15}" style="fill:var(--text-primary)">${r[0]}</text>`+bar(L,y+5,sx(r[1]),14,'var(--seq)')+`<text x="${L+sx(r[1])+6}" y="${y+16}" class="lbl">${r[1]}</text><rect class="hit" x="0" y="${y}" width="${W}" height="${rowH}" data-tip="<b>${r[0]}</b><br>Обращений: ${r[1]}"/>`});
+   $('cTopic').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Обращения по темам">${g}</svg>`+tableView(['Тема','Обращений'],rows);}
+
+  // типы
+  {const rows=TYPES.map(t=>{const n=sum(S.map(i=>t[1][i]));const r=sum(S.map(i=>t[1][i]*t[2][i]))/n;return[t[0],n,r]});const tot=sum(rows.map(r=>r[1]));
+   const W=380,H=60;let g='',x=0;
+   rows.forEach((r,k)=>{const w=(W)*r[1]/tot;const c=k?'#8fb8e8':'var(--seq)';g+=k===rows.length-1?bar(x,4,w,22,c):`<rect x="${x}" y="4" width="${w-2}" height="22" fill="${c}"/>`;
+     g+=`<rect class="hit" x="${x}" y="0" width="${w}" height="30" data-tip="<b>${r[0]}</b><br>${r[1]} (${Math.round(r[1]/tot*100)}%)<br>Ср. оценка: ${fmt(r[2].toFixed(1))}"/>`;
+     g+=`<text x="${x+(k?w:0)}" y="46" text-anchor="${k?'end':'start'}" class="lbl">${r[0]}: ${r[1]} · ${Math.round(r[1]/tot*100)}%</text><text x="${x+(k?w:0)}" y="60" text-anchor="${k?'end':'start'}">ср. оценка ${fmt(r[2].toFixed(1))}</text>`;x+=w});
+   $('cType').innerHTML=`<svg viewBox="0 0 ${W} ${H+4}" role="img" aria-label="Обращения по типам">${g}</svg>`;}
+
+  // распределение оценок
+  {const d=[0,1,2,3,4].map(k=>sum(S.map(i=>EX[i].dist[k])));const W=380,H=120,B=18,mx=Math.max(...d),bw=44,gap=(W-5*bw)/4;let g='';
+   d.forEach((v,k)=>{const h=(H-B-16)*v/mx,x=k*(bw+gap),y=H-B-h;const r=Math.min(4,h);
+     g+=`<path d="M${x},${H-B}v-${h-r}a${r},${r} 0 0 1 ${r},-${r}h${bw-2*r}a${r},${r} 0 0 1 ${r},${r}v${h-r}z" fill="var(--seq)"/>`;
+     g+=`<text x="${x+bw/2}" y="${y-4}" text-anchor="middle" class="lbl">${v}</text><text x="${x+bw/2}" y="${H-3}" text-anchor="middle">${k+1} ★</text>`;
+     g+=`<rect class="hit" x="${x-4}" y="0" width="${bw+8}" height="${H}" data-tip="Оценка ${k+1}: ${v} раз"/>`});
+   $('cDist').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Распределение оценок">${g}</svg>`;}
+}
+render();
+</script>
+</body>
+</html>

@@ -98,14 +98,12 @@
 <div class="side">
   <h2>KRJ Mobile — «Предложения и жалобы»</h2>
   <div class="tag">МАКЕТ · интерактивный</div>
-  <p>Что меняется по концепции «Единое окно»:</p>
+  <p>Как работает модуль «Предложения по улучшению»:</p>
   <ul>
-    <li><b>Тип</b>: Жалоба / Предложение / Благодарность.</li>
-    <li><b>Новые категории</b> по матрице ответственности, сгруппированы по зонам: Сервис и условия (ЕСО Vertex), Труд и персонал (Работодатель), Профсоюз и социум.</li>
-    <li>Работник <b>не выбирает адресата</b> — показываем, куда уйдёт обращение автоматически.</li>
-    <li>Фото, место, <b>конфиденциальное обращение</b> (ограниченный доступ).</li>
-    <li>В «Истории» — путь: Получено → Назначено → В работе → Проверено → Оценено.</li>
-    <li><b>Оценка 1–5★</b> после результата и кнопка «Проблема не устранена» (повторное открытие).</li>
+    <li>Работник выбирает <b>тип и тему</b>, пишет текст, прикладывает фото.</li>
+    <li>Обращение получает <b>модератор</b> и направляет одному из исполнителей: <b>Vertex-Holding, Профсоюз или HR-департамент КРЖ</b>.</li>
+    <li>Работнику приходят <b>push-уведомления о статусах</b>: Получено → Направлено исполнителю → В работе → Закрыто.</li>
+    <li>После закрытия работник видит решение и <b>оценивает работу исполнителя</b> (1–5 звёзд + комментарий).</li>
   </ul>
   <p style="color:#888;font-size:13px">Стиль взят из текущего приложения krj-mobile: цвета appBlueColor/appRedColor/appGreenColor, pill-кнопки, степпер, вкладки «Обращение / История».</p>
 </div>
@@ -146,14 +144,14 @@ const HDR=['Тип обращения','Категория','Опишите си
 let step=0, A={type:null,cat:null,descr:'',place:'Вахта №2',photos:0,conf:false};
 
 let H=[
- {id:'TRT-002390',cat:'Культура, спорт, досуг',type:'Предложение',date:'26.10.2026',st:3,push:true,descr:'Предлагаю турнир по волейболу между сменами.',dec:'Турнир включён в афишу на 15–16.11, запись открыта.',who:'Профсоюз',
-  times:['26.10 12:00','26.10 12:40','27.10 10:00','29.10 16:00']},
- {id:'TRT-002409',cat:'Стирка и бытовые услуги',type:'Жалоба',date:'29.10.2026',st:2,descr:'Спецодежду вернули с пятнами мазута.',dec:null,who:'ЕСО Vertex',times:['29.10 14:03','29.10 14:20','29.10 16:40']},
- {id:'TRT-002377',cat:'Охрана труда и СИЗ',type:'Жалоба',date:'24.10.2026',st:4,rating:5,descr:'Выдали каски не по размеру.',dec:'Выдано 6 касок нужного размера.',who:'Работодатель',times:['24.10 08:20','24.10 08:25','24.10 09:00','24.10 16:00','25.10 07:30']},
- {id:'TRT-002365',cat:'Уборка',type:'Жалоба',date:'22.10.2026',st:2,reopen:true,rating:2,descr:'Санузел на 2 этаже не убирается по 2–3 дня.',dec:'Уборка проведена, график усилен.',who:'ЕСО Vertex',times:['22.10 19:45','22.10 20:00','28.10 21:10']}
+ {id:'TRT-002398',cat:'Льготы и гарантии',type:'Жалоба',date:'27.10.2026',st:3,push:true,descr:'Не выплачена материальная помощь к отпуску.',dec:'Материальная помощь начислена, выплата 05.11 вместе с авансом.',who:'HR-департамент КРЖ',
+  times:['27.10 18:11','27.10 18:30','28.10 09:10','30.10 09:05']},
+ {id:'TRT-002409',cat:'Стирка и бытовые услуги',type:'Жалоба',date:'29.10.2026',st:2,descr:'Спецодежду вернули с пятнами мазута.',dec:null,who:'Vertex-Holding',times:['29.10 14:03','29.10 14:20','29.10 16:40']},
+ {id:'TRT-002401',cat:'Оплата, графики, отпуска',type:'Жалоба',date:'28.10.2026',st:0,descr:'В расчётном листе не учтены 2 ночные смены.',dec:null,who:null,times:['28.10 09:30']},
+ {id:'TRT-002390',cat:'Культура, спорт, досуг',type:'Предложение',date:'26.10.2026',st:4,rating:5,descr:'Организовать поездку в театр для межвахтового отдыха.',dec:'Поездка в театр 22.11, запись в профкоме.',who:'Профсоюз',times:['26.10 12:00','26.10 12:40','27.10 10:00','29.10 15:30','29.10 19:02']}
 ];
-const STEPS=['Получено','Назначено','В работе','Проверено','Оценено'];
-let openId='TRT-002390', tmpRate={};
+const STEPS=['Получено','Направлено исполнителю','В работе','Закрыто','Оценено'];
+let openId='TRT-002398', tmpRate={};
 
 const $=id=>document.getElementById(id);
 function toast(t){$('tg').textContent=t;$('tg').classList.add('on');setTimeout(()=>$('tg').classList.remove('on'),2300)}
@@ -166,7 +164,7 @@ function renderNew(){
   if(step===0){
     h=`<div class="sub">Что вы хотите отправить?</div><div class="grid2">`+TYPES.map(t=>`<div class="pill ${A.type===t?'on':''}" onclick="A.type='${t}';renderNew()">${t}</div>`).join('')+`</div>`;
   } else if(step===1){
-    h=`<div class="sub">Выберите, о чём обращение — адресата система определит сама</div>`+GROUPS.map(g=>`<div class="grp">${g.g}<b class="${g.cls}">${g.who}</b></div><div class="grid2">`+
+    h=`<div class="sub">Выберите тему — модератор направит обращение ответственному</div>`+GROUPS.map(g=>`<div class="grp">${g.g}</div><div class="grid2">`+
       g.items.map(i=>`<div class="cat ${A.cat===i[1]?'on':''} ${i[1]==='Конфиденциально'?'conf':''}" onclick="A.cat='${i[1]}';A.conf=${i[1]==='Конфиденциально'};renderNew()">${i[1]}</div>`).join('')+`</div>`).join('');
   } else if(step===2){
     h=`<div class="field"><label>Описание</label><textarea rows="5" placeholder="Что случилось, когда, где…" oninput="A.descr=this.value;upd()">${A.descr}</textarea></div>
@@ -181,9 +179,9 @@ function renderNew(){
       <div class="row"><div class="cap">Место / фото:</div><div class="val">${A.place} · фото: ${A.photos}</div></div>
       ${A.conf?'<div class="row"><div class="val" style="color:#c62828">Конфиденциально</div></div>':''}
       </div>
-      <div class="route">Обращение будет направлено: <b>${WHO[A.cat]}</b><br>Срок рассмотрения: до 48 ч. Статус увидите во вкладке «История».</div>`;
+      <div class="route">Обращение получит модератор и направит ответственному исполнителю: Vertex-Holding, Профсоюз или HR-департамент КРЖ. Статусы придут уведомлениями и видны во вкладке «История».</div>`;
   } else {
-    h=`<div class="done"><div class="big"><svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="#7ec172" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></div><h3>Обращение отправлено</h3><p>№ TRT-002418<br>Направлено: ${WHO[A.cat]}</p><p>Мы пришлём уведомление, когда статус изменится.</p></div>`;
+    h=`<div class="done"><div class="big"><svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="#7ec172" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></div><h3>Обращение отправлено</h3><p>№ TRT-002418<br>Передано модератору</p><p>Мы пришлём уведомление, когда статус изменится.</p></div>`;
   }
   $('stepBody').innerHTML=h;upd();
 }
@@ -194,17 +192,16 @@ function upd(){
   $('bBack').textContent=step===0||step>3?'Отмена':'Назад';
 }
 function next(){
-  if(step===3){H.unshift({id:'TRT-002418',cat:A.cat,type:A.type,date:'30.10.2026',st:0,descr:A.descr,dec:null,who:WHO[A.cat],times:['30.10 09:41'],push:false});openId='TRT-002418'}
+  if(step===3){H.unshift({id:'TRT-002418',cat:A.cat,type:A.type,date:'30.10.2026',st:0,descr:A.descr,dec:null,who:null,times:['30.10 09:41'],push:false});openId='TRT-002418'}
   if(step>3){step=0;A={type:null,cat:null,descr:'',place:'Вахта №2',photos:0,conf:false};tab(1);return}
   step++;renderNew();
 }
 function back(){if(step===0||step>3){step=0;A={type:null,cat:null,descr:'',place:'Вахта №2',photos:0,conf:false};toast('Отменено')}else step--;renderNew()}
 
 function badge(e){
-  if(e.reopen)return'<span class="badge b-re">Переоткрыто</span>';
-  return[`<span class="badge b-new">Получено</span>`,`<span class="badge b-new">Назначено</span>`,`<span class="badge b-work">В работе</span>`,`<span class="badge b-rate">Оцените</span>`,`<span class="badge b-done">Оценено ${'★'.repeat(e.rating||0)}</span>`][e.st];
+  return[`<span class="badge b-new">Получено</span>`,`<span class="badge b-new">Направлено</span>`,`<span class="badge b-work">В работе</span>`,`<span class="badge b-rate">Оцените</span>`,`<span class="badge b-done">Оценено</span>`][e.st];
 }
-function icon(e){return e.reopen?'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#d95858" stroke-width="2"><path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v4h4"/></svg>':e.st>=4?'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#7ec172" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>':e.st===3?'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#f5a623" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>':'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#5997de" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'}
+function icon(e){return false?'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#d95858" stroke-width="2"><path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v4h4"/></svg>':e.st>=4?'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#7ec172" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>':e.st===3?'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#f5a623" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>':'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#5997de" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'}
 function renderHist(){
   $('pHist').innerHTML=H.map(e=>`<div class="hi ${e.push?'push':''}">
     <div class="top" onclick="openId=openId==='${e.id}'?null:'${e.id}';H.find(x=>x.id==='${e.id}').push=false;renderHist()">
@@ -213,26 +210,24 @@ function renderHist(){
       ${badge(e)} ${e.push?'<span class="bell"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#d95858" stroke-width="2"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></span>':''}
     </div>
     ${openId===e.id?`<div class="det">
-      <div class="cap">Ответственный</div><div>${e.who}</div>
+      <div class="cap">Исполнитель</div><div>${e.who||'<span style="color:#aaa">Модератор рассматривает обращение</span>'}</div>
       <div class="cap">Статус</div>
-      <ul class="trk">${STEPS.map((s,i)=>{const re=e.reopen&&i===2;return `<li class="${i<e.st?'d':i===e.st?'c':''}">${re?'В работе (повторно)':s}${e.times[i]?`<small>${e.times[i]}</small>`:''}</li>`}).join('')}</ul>
+      <ul class="trk">${STEPS.map((s,i)=>{return `<li class="${i<e.st||e.st===4?'d':i===e.st?'c':''}">${i===1&&e.who?s+': '+e.who:s}${e.times[i]?`<small>${e.times[i]}</small>`:''}</li>`}).join('')}</ul>
       <div class="cap">Текст обращения</div><div>${e.descr}</div>
       <div class="cap">Решение</div><div>${e.dec||'<span style="color:#aaa">Нет данных</span>'}</div>
       ${e.st===3&&!e.rating?rateBlock(e):''}
-      ${e.st===4?`<div class="cap">Ваша оценка</div><div style="color:#f5a623;font-size:20px">${'★'.repeat(e.rating)}<span style="color:#ddd">${'★'.repeat(5-e.rating)}</span></div>`:''}
-      ${e.reopen?`<div class="route" style="background:#FFEBEE;color:#c62828">Вы сообщили, что проблема не устранена (${'★'.repeat(e.rating)}). Обращение повторно направлено исполнителю.</div>`:''}
+      ${e.st===4?`<div class="cap">Ваша оценка работы: ${e.who}</div><div style="color:#f5a623;font-size:20px">${'★'.repeat(e.rating)}<span style="color:#ddd">${'★'.repeat(5-e.rating)}</span></div>`:''}
     </div>`:''}
   </div>`).join('');
 }
 function rateBlock(e){
   const r=tmpRate[e.id]||0;
-  return `<div class="rate"><div class="q">Проблема решена? Оцените результат</div>
+  return `<div class="rate"><div class="q">Оцените работу исполнителя: ${e.who}</div>
     <div class="st5">${[1,2,3,4,5].map(i=>`<span class="${i<=r?'on':''}" onclick="tmpRate['${e.id}']=${i};renderHist()">★</span>`).join('')}</div>
     <textarea rows="2" placeholder="Комментарий (необязательно)"></textarea>
-    <div class="btns"><button class="bL" ${r?'':'disabled'} onclick="rate('${e.id}')">Оценить</button><button class="rr" onclick="reopen('${e.id}')">Проблема не устранена</button></div></div>`;
+    <div class="btns"><button class="bL" ${r?'':'disabled'} onclick="rate('${e.id}')">Оценить</button></div></div>`;
 }
-function rate(id){const e=H.find(x=>x.id===id);e.rating=tmpRate[id];if(e.rating<=2){reopen(id);return}e.st=4;e.times[4]='30.10 09:45';toast('Спасибо за оценку!');renderHist()}
-function reopen(id){const e=H.find(x=>x.id===id);e.rating=e.rating||tmpRate[id]||1;e.reopen=true;e.st=2;toast('Обращение открыто повторно');renderHist()}
+function rate(id){const e=H.find(x=>x.id===id);e.rating=tmpRate[id];e.st=4;e.times[4]='30.10 09:45';toast('Спасибо за оценку!');renderHist()}
 
 renderNew();
 </script>
