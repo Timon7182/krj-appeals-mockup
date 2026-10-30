@@ -35,7 +35,7 @@
   .grp{margin:10px 16px 4px;font-size:12px;font-weight:700;letter-spacing:.04em;color:#77818A;text-transform:uppercase;display:flex;align-items:center;gap:6px}
   .grp b{font-weight:600;text-transform:none;letter-spacing:0;font-size:11px;padding:1px 6px;border-radius:8px}
   .g-eso{background:#e0f2f1;color:#00695c}.g-un{background:#f3e5f5;color:#6a1b9a}.g-emp{background:#e3f2fd;color:#1565c0}
-  .cat{border:1.5px solid var(--border);border-radius:12px;padding:10px 8px;text-align:center;font-size:13px;cursor:pointer;background:#fff;line-height:1.2}
+  .cat{border:1.5px solid var(--border);border-radius:999px;padding:11px 8px;text-align:center;font-size:13px;cursor:pointer;background:#fff;line-height:1.2}
   .cat .ic{font-size:22px;display:block;margin-bottom:3px}
   .cat.on{border-color:var(--blue);background:#eef5fd;color:#1f4aac;font-weight:600}
   .cat.conf{border-style:dashed}
@@ -61,7 +61,7 @@
   .hi{border-bottom:1px solid var(--border)}
   .hi .top{display:flex;gap:12px;align-items:center;padding:12px 14px;cursor:pointer}
   .hi.push{background:rgba(89,151,222,.12)}
-  .hi .ico{width:30px;font-size:22px;text-align:center}
+  .hi .ico{width:30px;display:flex;justify-content:center}
   .hi .tt{flex:1}
   .hi .tt b{font-weight:600;font-size:16px;display:block}
   .hi .tt span{font-size:12.5px;color:#999}
@@ -111,9 +111,9 @@
 </div>
 
 <div class="phone"><div class="screen">
-  <div class="status"><span>9:41</span><span>▂▄▆ ⚡ 87%</span></div>
+  <div class="status"><span>9:41</span><span>87%</span></div>
   <div class="appbar"><span class="back">←</span><span class="t">Предложения и жалобы</span></div>
-  <div class="tabs"><div class="on" id="t0" onclick="tab(0)">Обращение</div><div id="t1" onclick="tab(1)">История <span class="bell">●</span></div></div>
+  <div class="tabs"><div class="on" id="t0" onclick="tab(0)">Обращение</div><div id="t1" onclick="tab(1)">История</div></div>
 
   <!-- NEW APPEAL -->
   <div class="body" id="pNew">
@@ -135,10 +135,10 @@
 <script>
 const TYPES=['Жалоба','Предложение','Благодарность'];
 const GROUPS=[
-  {g:'Сервис и условия',who:'ЕСО Vertex',cls:'g-eso',items:[['🍽','Питание'],['🛏','Проживание'],['🧹','Уборка'],['👕','Стирка и бытовые услуги'],['🚌','Транспорт / доставка']]},
-  {g:'Труд и персонал',who:'Работодатель',cls:'g-emp',items:[['💳','Оплата, графики, отпуска'],['🦺','Охрана труда и СИЗ'],['🎁','Льготы и гарантии']]},
-  {g:'Профсоюз и социум',who:'Профсоюз',cls:'g-un',items:[['⚽','Культура, спорт, досуг'],['⚖','Защита трудовых прав'],['💡','Идея / инициатива']]},
-  {g:'Другое',who:'Координатор',cls:'g-emp',items:[['🔒','Конфиденциально'],['❓','Не знаю, куда отнести']]}
+  {g:'Сервис и условия',who:'ЕСО Vertex',cls:'g-eso',items:[['','Питание'],['','Проживание'],['','Уборка'],['','Стирка и бытовые услуги'],['','Транспорт / доставка']]},
+  {g:'Труд и персонал',who:'Работодатель',cls:'g-emp',items:[['','Оплата, графики, отпуска'],['','Охрана труда и СИЗ'],['','Льготы и гарантии']]},
+  {g:'Профсоюз и социум',who:'Профсоюз',cls:'g-un',items:[['','Культура, спорт, досуг'],['','Защита трудовых прав'],['','Идея / инициатива']]},
+  {g:'Другое',who:'Координатор',cls:'g-emp',items:[['','Конфиденциально'],['','Не знаю, куда отнести']]}
 ];
 const WHO={};GROUPS.forEach(g=>g.items.forEach(i=>WHO[i[1]]=g.who));
 WHO['Конфиденциально']='Уполномоченное лицо (ограниченный доступ)';WHO['Не знаю, куда отнести']='Координатор платформы — распределит сам';
@@ -153,7 +153,7 @@ let H=[
  {id:'TRT-002365',cat:'Уборка',type:'Жалоба',date:'22.10.2026',st:2,reopen:true,rating:2,descr:'Санузел на 2 этаже не убирается по 2–3 дня.',dec:'Уборка проведена, график усилен.',who:'ЕСО Vertex',times:['22.10 19:45','22.10 20:00','28.10 21:10']}
 ];
 const STEPS=['Получено','Назначено','В работе','Проверено','Оценено'];
-let open='TRT-002390', tmpRate={};
+let openId='TRT-002390', tmpRate={};
 
 const $=id=>document.getElementById(id);
 function toast(t){$('tg').textContent=t;$('tg').classList.add('on');setTimeout(()=>$('tg').classList.remove('on'),2300)}
@@ -167,7 +167,7 @@ function renderNew(){
     h=`<div class="sub">Что вы хотите отправить?</div><div class="grid2">`+TYPES.map(t=>`<div class="pill ${A.type===t?'on':''}" onclick="A.type='${t}';renderNew()">${t}</div>`).join('')+`</div>`;
   } else if(step===1){
     h=`<div class="sub">Выберите, о чём обращение — адресата система определит сама</div>`+GROUPS.map(g=>`<div class="grp">${g.g}<b class="${g.cls}">${g.who}</b></div><div class="grid2">`+
-      g.items.map(i=>`<div class="cat ${A.cat===i[1]?'on':''} ${i[1]==='Конфиденциально'?'conf':''}" onclick="A.cat='${i[1]}';A.conf=${i[1]==='Конфиденциально'};renderNew()"><span class="ic">${i[0]}</span>${i[1]}</div>`).join('')+`</div>`).join('');
+      g.items.map(i=>`<div class="cat ${A.cat===i[1]?'on':''} ${i[1]==='Конфиденциально'?'conf':''}" onclick="A.cat='${i[1]}';A.conf=${i[1]==='Конфиденциально'};renderNew()">${i[1]}</div>`).join('')+`</div>`).join('');
   } else if(step===2){
     h=`<div class="field"><label>Описание</label><textarea rows="5" placeholder="Что случилось, когда, где…" oninput="A.descr=this.value;upd()">${A.descr}</textarea></div>
       <div class="field"><label>Место</label><select onchange="A.place=this.value">${['Вахта №1','Вахта №2','Общежитие 1','Общежитие 3','Столовая','Рудник','ОФ','Транспорт'].map(p=>`<option ${A.place===p?'selected':''}>${p}</option>`).join('')}</select></div>
@@ -179,11 +179,11 @@ function renderNew(){
       <div class="row"><div class="cap">Тип обращения:</div><div class="val">${A.type}</div></div>
       <div class="row"><div class="cap">Категория:</div><div class="val">${A.cat}</div></div>
       <div class="row"><div class="cap">Место / фото:</div><div class="val">${A.place} · фото: ${A.photos}</div></div>
-      ${A.conf?'<div class="row"><div class="val" style="color:#c62828">🔒 Конфиденциально</div></div>':''}
+      ${A.conf?'<div class="row"><div class="val" style="color:#c62828">Конфиденциально</div></div>':''}
       </div>
-      <div class="route">➜ Обращение будет направлено: <b>${WHO[A.cat]}</b><br>Срок рассмотрения: до 48 ч. Статус увидите во вкладке «История».</div>`;
+      <div class="route">Обращение будет направлено: <b>${WHO[A.cat]}</b><br>Срок рассмотрения: до 48 ч. Статус увидите во вкладке «История».</div>`;
   } else {
-    h=`<div class="done"><div class="big">✓</div><h3>Обращение отправлено</h3><p>№ TRT-002418<br>Направлено: ${WHO[A.cat]}</p><p>Мы пришлём уведомление, когда статус изменится.</p></div>`;
+    h=`<div class="done"><div class="big"><svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="#7ec172" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></div><h3>Обращение отправлено</h3><p>№ TRT-002418<br>Направлено: ${WHO[A.cat]}</p><p>Мы пришлём уведомление, когда статус изменится.</p></div>`;
   }
   $('stepBody').innerHTML=h;upd();
 }
@@ -194,7 +194,7 @@ function upd(){
   $('bBack').textContent=step===0||step>3?'Отмена':'Назад';
 }
 function next(){
-  if(step===3){H.unshift({id:'TRT-002418',cat:A.cat,type:A.type,date:'30.10.2026',st:0,descr:A.descr,dec:null,who:WHO[A.cat],times:['30.10 09:41'],push:false});open='TRT-002418'}
+  if(step===3){H.unshift({id:'TRT-002418',cat:A.cat,type:A.type,date:'30.10.2026',st:0,descr:A.descr,dec:null,who:WHO[A.cat],times:['30.10 09:41'],push:false});openId='TRT-002418'}
   if(step>3){step=0;A={type:null,cat:null,descr:'',place:'Вахта №2',photos:0,conf:false};tab(1);return}
   step++;renderNew();
 }
@@ -204,15 +204,15 @@ function badge(e){
   if(e.reopen)return'<span class="badge b-re">Переоткрыто</span>';
   return[`<span class="badge b-new">Получено</span>`,`<span class="badge b-new">Назначено</span>`,`<span class="badge b-work">В работе</span>`,`<span class="badge b-rate">Оцените</span>`,`<span class="badge b-done">Оценено ${'★'.repeat(e.rating||0)}</span>`][e.st];
 }
-function icon(e){return e.reopen?'<span style="color:#d95858">↺</span>':e.st>=4?'<span style="color:#7ec172">✔</span>':e.st===3?'<span style="color:#f5a623">★</span>':'<span style="color:#5997de">◷</span>'}
+function icon(e){return e.reopen?'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#d95858" stroke-width="2"><path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v4h4"/></svg>':e.st>=4?'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#7ec172" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>':e.st===3?'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#f5a623" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>':'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#5997de" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'}
 function renderHist(){
   $('pHist').innerHTML=H.map(e=>`<div class="hi ${e.push?'push':''}">
-    <div class="top" onclick="open=open==='${e.id}'?null:'${e.id}';H.find(x=>x.id==='${e.id}').push=false;renderHist()">
+    <div class="top" onclick="openId=openId==='${e.id}'?null:'${e.id}';H.find(x=>x.id==='${e.id}').push=false;renderHist()">
       <div class="ico">${icon(e)}</div>
       <div class="tt"><b>${e.cat}</b><span>${e.type} · ${e.date} · ${e.id}</span></div>
-      ${badge(e)} ${e.push?'<span class="bell">🔔</span>':''}
+      ${badge(e)} ${e.push?'<span class="bell"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#d95858" stroke-width="2"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></span>':''}
     </div>
-    ${open===e.id?`<div class="det">
+    ${openId===e.id?`<div class="det">
       <div class="cap">Ответственный</div><div>${e.who}</div>
       <div class="cap">Статус</div>
       <ul class="trk">${STEPS.map((s,i)=>{const re=e.reopen&&i===2;return `<li class="${i<e.st?'d':i===e.st?'c':''}">${re?'В работе (повторно)':s}${e.times[i]?`<small>${e.times[i]}</small>`:''}</li>`}).join('')}</ul>

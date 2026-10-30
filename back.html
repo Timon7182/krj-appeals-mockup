@@ -182,7 +182,7 @@
     </div>
     <div class="bp">
       <button class="btn primary">+ Создать</button>
-      <button class="btn" onclick="curId&&openEdit(curId)">✎ Изменить</button>
+      <button class="btn" onclick="curId&&openEdit(curId)">Изменить</button>
       <button class="btn" onclick="toast('Выгрузка в Excel (макет)')">Excel</button>
     </div>
     <table class="grid">
@@ -286,7 +286,7 @@ let D = [
   log:[['sys','29.10 14:03','Зарегистрировано'],['sys','29.10 14:04','Автомаршрут → ЕСО Vertex'],['out','29.10 14:20','Заявка отправлена в Vertex ЕСО — Service Desk'],['in','29.10 14:21','Vertex: заявка принята, № VX-SD-58812'],['in','29.10 16:40','Vertex: назначен исполнитель — начальник прачечной Ли В.']]},
  {id:'TRT-002401',date:'28.10.2026 09:30',type:'Жалоба',cat:'Транспорт / доставка',author:'Ержанов М. С.',site:'Маршрут Шемонаиха — рудник',sys:'vertex',ext:'VX-SD-58790',status:'sent',due:'29.10 09:30',over:true,
   descr:'Автобус на смену 28.10 опоздал на 50 минут, люди ждали на морозе.',photos:0,
-  log:[['sys','28.10 09:30','Зарегистрировано'],['out','28.10 10:02','Заявка отправлена в Vertex ЕСО — Service Desk'],['in','28.10 10:03','Vertex: заявка принята, № VX-SD-58790'],['sys','29.10 09:30','⚠ Просрочен SLA: нет ответа от исполнителя']]},
+  log:[['sys','28.10 09:30','Зарегистрировано'],['out','28.10 10:02','Заявка отправлена в Vertex ЕСО — Service Desk'],['in','28.10 10:03','Vertex: заявка принята, № VX-SD-58790'],['sys','29.10 09:30','Просрочен SLA: нет ответа от исполнителя']]},
  {id:'TRT-002398',date:'27.10.2026 18:11',type:'Жалоба',cat:'Оплата, графики, отпуска',author:'Абдрахманова А. Т.',site:'ОФ, участок флотации',sys:'hr',ext:'HR-11407',status:'result',due:'03.11 18:11',over:false,
   descr:'В расчётном листе за сентябрь не учтены 2 ночные смены.',photos:1,decision:'Перерасчёт выполнен, доплата 2 ночных смен войдёт в аванс 15.11. — Отдел расчёта заработной платы',
   log:[['sys','27.10 18:11','Зарегистрировано'],['out','27.10 18:30','Заявка отправлена в HR / 1С:ЗУП'],['in','27.10 18:31','HR: принято, № HR-11407'],['in','28.10 11:15','HR: в работе, ответственный — Нурланова С.'],['in','30.10 09:05','HR: результат — перерасчёт выполнен']]},
@@ -361,12 +361,12 @@ function renderEdit(r){
     : `<h3>Оценка работника</h3><div class="muted">${r.status==='checked'?'Ожидаем оценку в мобильном приложении (push отправлен).':'Оценка появится после проверки результата.'}</div>`;
   // actions (существующие + новые)
   const s=r.status, A=[];
-  if(['new','assigned','reopen'].includes(s)) A.push(`<button class="btn send" onclick="openSend()">➤ Отправить заявку</button>`);
+  if(['new','assigned','reopen'].includes(s)) A.push(`<button class="btn send" onclick="openSend()">Отправить заявку</button>`);
   if(s==='new') A.push(`<button class="btn primary" onclick="setSt('assigned','Принято в работу диспетчером')">Принять</button>`);
-  if(s==='result') A.push(`<button class="btn ok" onclick="setSt('checked','Результат проверен, работнику отправлен запрос на оценку')">✓ Подтвердить результат</button>`,`<button class="btn" onclick="show('dlgReturn')">↺ Вернуть исполнителю</button>`);
+  if(s==='result') A.push(`<button class="btn ok" onclick="setSt('checked','Результат проверен, работнику отправлен запрос на оценку')">Подтвердить результат</button>`,`<button class="btn" onclick="show('dlgReturn')">Вернуть исполнителю</button>`);
   if(s==='checked') A.push(`<button class="btn" onclick="toast('Push-напоминание об оценке отправлено')">Напомнить об оценке</button>`);
   if(s==='rated') A.push(`<button class="btn ok" onclick="toast('Обращение закрыто');closeEdit()">Закрыть обращение</button>`);
-  if(['sent','work'].includes(s)) A.push(`<button class="btn" onclick="poll()">⟳ Запросить статус</button>`);
+  if(['sent','work'].includes(s)) A.push(`<button class="btn" onclick="poll()">Запросить статус</button>`);
   A.push(`<button class="btn" onclick="toast('Сохранено')">Сохранить</button>`,`<button class="btn" onclick="toast('Перенаправлено')">Перенаправить</button>`,`<span class="sp"></span>`);
   if(!['rated','cancel'].includes(s)) A.push(`<button class="btn danger" onclick="setSt('cancel','Отменено диспетчером')">Отменить</button>`);
   A.push(`<button class="btn" onclick="closeEdit()">Закрыть</button>`);
@@ -387,17 +387,17 @@ function renderEdit(r){
     $('extBox').innerHTML=`<h3>Заявка во внешней системе</h3>
       <div class="muted" style="margin-bottom:8px">Заявка ещё не отправлена.</div>
       <div>По матрице ответственности категория <b>«${r.cat}»</b> → <span class="party ${S.cls}">${S.party}</span>, система <b>${S.name}</b>.</div>
-      <div style="margin-top:10px"><button class="btn send" onclick="openSend()">➤ Отправить заявку</button></div>`;
+      <div style="margin-top:10px"><button class="btn send" onclick="openSend()">Отправить заявку</button></div>`;
   }
-  const cls={sys:['sys','s','Система'],out:['out','o','→ Исх.'],in:['in','i','← Вх.'],emp:['emp','e','Работник']};
+  const cls={sys:['sys','s','Система'],out:['out','o','Исх.'],in:['in','i','Вх.'],emp:['emp','e','Работник']};
   $('log').innerHTML=r.log.slice().reverse().map(l=>`<li class="${cls[l[0]][0]}"><span class="dir ${cls[l[0]][1]}">${cls[l[0]][2]}</span>${l[2]}<br><span class="t">${l[1]}</span></li>`).join('');
   // simulator (вместо реальной внешней системы)
   $('simu').innerHTML = (['sent','work'].includes(s)&&r.sys)
-    ? `<b>⚙ Имитация ответа внешней системы (только для демонстрации)</b>
+    ? `<b>Имитация ответа внешней системы (только для демонстрации)</b>
        ${s==='sent'?`<button class="btn" onclick="extIn('work','назначен исполнитель, работы начаты')">Исполнитель взял в работу</button>`:''}
        <button class="btn" onclick="extIn('result','результат — работы выполнены, приложено фото')">Пришёл результат</button>
        <button class="btn" onclick="extIn('assigned','отклонено — не наша компетенция, вернуть диспетчеру')">Система отклонила</button>`
-    : `<b>⚙ Имитация внешней системы</b><span class="muted">Кнопки появятся, когда заявка будет отправлена (статусы «Отправлено» / «В работе»).</span>`;
+    : `<b>Имитация внешней системы</b><span class="muted">Кнопки появятся, когда заявка будет отправлена (статусы «Отправлено» / «В работе»).</span>`;
 }
 function cur(){return D.find(x=>x.id===curId)}
 function setSt(s,msg,kind='sys'){const r=cur();r.status=s;r.log.push([kind,now(),msg]);if(s!=='sent')r.over=false;renderEdit(r);toast(ST[s][0])}
@@ -405,7 +405,7 @@ function openSend(){
   const r=cur(),rec=r.sys||CAT[r.cat];
   $('dlgInfo').innerHTML=`${r.id} · ${r.cat} · ${r.site}`;
   $('sysList').innerHTML=Object.entries(SYSTEMS).map(([k,S])=>`<label class="${k===rec?'rec':''}"><input type="radio" name="sys" value="${k}" ${k===rec?'checked':''}><span><b>${S.name}</b><small>${S.d}</small></span></label>`).join('');
-  $('recHint').textContent=`✓ Рекомендовано по матрице ответственности для категории «${r.cat}»`;
+  $('recHint').textContent=`Рекомендовано по матрице ответственности для категории «${r.cat}»`;
   $('dComment').value=r.status==='reopen'?'Повторно: работник оценил на 2★, проблема не устранена. Прошу проверить на месте.':'';
   show('dlgSend');
 }
