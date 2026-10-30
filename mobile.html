@@ -100,7 +100,7 @@
   <div class="tag">МАКЕТ · интерактивный</div>
   <p>Как работает модуль «Предложения по улучшению»:</p>
   <ul>
-    <li>Работник выбирает <b>тип и тему</b>, пишет текст, прикладывает фото.</li>
+    <li>Работник выбирает <b>тип и тему</b> (без деления по ответственным), пишет текст, прикладывает фото.</li>
     <li>Обращение получает <b>модератор</b> и направляет одному из исполнителей: <b>Vertex-Holding, Профсоюз или HR-департамент КРЖ</b>.</li>
     <li>Работнику приходят <b>push-уведомления о статусах</b>: Получено → Направлено исполнителю → В работе → Закрыто.</li>
     <li>После закрытия работник видит решение и <b>оценивает работу исполнителя</b> (1–5 звёзд + комментарий).</li>
@@ -131,6 +131,7 @@
 </div></div>
 
 <script>
+const TOPICS=['Питание','Проживание','Уборка','Стирка и бытовые услуги','Транспорт','Оплата, графики, отпуска','Охрана труда и СИЗ','Льготы и гарантии','Культура, спорт, досуг','Защита трудовых прав','Идея / инициатива','Другое'];
 const TYPES=['Жалоба','Предложение','Благодарность'];
 const GROUPS=[
   {g:'Сервис и условия',who:'ЕСО Vertex',cls:'g-eso',items:[['','Питание'],['','Проживание'],['','Уборка'],['','Стирка и бытовые услуги'],['','Транспорт / доставка']]},
@@ -140,7 +141,7 @@ const GROUPS=[
 ];
 const WHO={};GROUPS.forEach(g=>g.items.forEach(i=>WHO[i[1]]=g.who));
 WHO['Конфиденциально']='Уполномоченное лицо (ограниченный доступ)';WHO['Не знаю, куда отнести']='Координатор платформы — распределит сам';
-const HDR=['Тип обращения','Категория','Опишите ситуацию','Проверьте и отправьте'];
+const HDR=['Тип обращения','Тема обращения','Опишите ситуацию','Проверьте и отправьте'];
 let step=0, A={type:null,cat:null,descr:'',place:'Вахта №2',photos:0,conf:false};
 
 let H=[
@@ -164,8 +165,7 @@ function renderNew(){
   if(step===0){
     h=`<div class="sub">Что вы хотите отправить?</div><div class="grid2">`+TYPES.map(t=>`<div class="pill ${A.type===t?'on':''}" onclick="A.type='${t}';renderNew()">${t}</div>`).join('')+`</div>`;
   } else if(step===1){
-    h=`<div class="sub">Выберите тему — модератор направит обращение ответственному</div>`+GROUPS.map(g=>`<div class="grp">${g.g}</div><div class="grid2">`+
-      g.items.map(i=>`<div class="cat ${A.cat===i[1]?'on':''} ${i[1]==='Конфиденциально'?'conf':''}" onclick="A.cat='${i[1]}';A.conf=${i[1]==='Конфиденциально'};renderNew()">${i[1]}</div>`).join('')+`</div>`).join('');
+    h=`<div class="sub">Выберите тему обращения</div><div class="grid2">`+TOPICS.map(t=>`<div class="cat ${A.cat===t?'on':''}" onclick="A.cat='${t}';renderNew()">${t}</div>`).join('')+`</div>`;
   } else if(step===2){
     h=`<div class="field"><label>Описание</label><textarea rows="5" placeholder="Что случилось, когда, где…" oninput="A.descr=this.value;upd()">${A.descr}</textarea></div>
       <div class="field"><label>Место</label><select onchange="A.place=this.value">${['Вахта №1','Вахта №2','Общежитие 1','Общежитие 3','Столовая','Рудник','ОФ','Транспорт'].map(p=>`<option ${A.place===p?'selected':''}>${p}</option>`).join('')}</select></div>
@@ -175,7 +175,7 @@ function renderNew(){
     h=`<div class="info">
       <div class="row"><div class="cap">Текст обращения:</div><div class="val txt">${A.descr||'—'}</div></div>
       <div class="row"><div class="cap">Тип обращения:</div><div class="val">${A.type}</div></div>
-      <div class="row"><div class="cap">Категория:</div><div class="val">${A.cat}</div></div>
+      <div class="row"><div class="cap">Тема:</div><div class="val">${A.cat}</div></div>
       <div class="row"><div class="cap">Место / фото:</div><div class="val">${A.place} · фото: ${A.photos}</div></div>
       ${A.conf?'<div class="row"><div class="val" style="color:#c62828">Конфиденциально</div></div>':''}
       </div>
